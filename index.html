@@ -6,7 +6,7 @@
   <title>Biblioteca di Caltabellotta</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-main: #16120e;
@@ -48,13 +48,13 @@
       background-color: var(--bg-main);
       position: sticky;
       top: 0;
-      z-index: 1000;
+      z-index: 100;
     }
 
     .nav-container {
       max-width: 1180px;
       margin: 0 auto;
-      padding: 18px 24px;
+      padding: 16px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -67,17 +67,16 @@
       align-items: center;
       gap: 12px;
       font-weight: 600;
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       cursor: pointer;
-      font-family: var(--heading-font);
     }
 
     .brand-icon {
       background-color: var(--accent);
       color: white;
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -87,7 +86,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: var(--text-secondary);
       flex-wrap: wrap;
     }
@@ -97,9 +96,9 @@
       border: 1px solid transparent;
       color: var(--text-secondary);
       font-family: inherit;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       cursor: pointer;
-      padding: 8px 14px;
+      padding: 6px 12px;
       border-radius: 6px;
       display: flex;
       align-items: center;
@@ -107,25 +106,25 @@
       transition: all 0.2s;
     }
 
-    .nav-links button:hover { color: var(--text-primary); background-color: var(--bg-surface); }
+    .nav-links button:hover { color: var(--text-primary); }
     .nav-links button.active-tab {
       border-color: var(--accent);
       color: var(--text-primary);
-      background-color: rgba(168, 50, 38, 0.15);
+      background-color: rgba(168, 50, 38, 0.12);
     }
 
     .btn-primary {
       background-color: var(--accent) !important;
       color: #fff !important;
       font-weight: 500;
-      padding: 10px 20px !important;
+      padding: 8px 16px !important;
       border-radius: 6px;
       border: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       transition: background 0.2s;
     }
     .btn-primary:hover { background-color: var(--accent-hover) !important; }
@@ -134,9 +133,9 @@
       background-color: var(--bg-surface);
       border: 1px solid var(--border-color);
       color: var(--text-primary);
-      padding: 10px 18px;
+      padding: 8px 16px;
       border-radius: 6px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       cursor: pointer;
       transition: background 0.2s;
     }
@@ -148,7 +147,7 @@
       max-width: 1180px;
       width: 100%;
       margin: 0 auto;
-      padding: 48px 24px 80px;
+      padding: 40px 24px 80px;
     }
 
     .view-section { display: none; }
@@ -161,37 +160,37 @@
 
     /* HOME */
     .hero-top-label {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.12em;
       color: var(--text-secondary);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       font-weight: 600;
     }
     .hero-title {
-      font-size: 3.5rem;
+      font-size: 3.2rem;
       line-height: 1.15;
-      margin-bottom: 20px;
-      max-width: 850px;
+      margin-bottom: 16px;
+      max-width: 800px;
     }
     .hero-title span { color: var(--accent); font-style: italic; }
     .hero-desc {
       color: var(--text-secondary);
-      font-size: 1.15rem;
-      max-width: 700px;
-      margin-bottom: 36px;
+      font-size: 1.05rem;
+      max-width: 650px;
+      margin-bottom: 32px;
     }
     .hero-banner {
       width: 100%;
       height: 440px;
       border-radius: 12px;
       overflow: hidden;
-      margin: 32px 0 64px;
+      margin: 24px 0 64px;
       border: 1px solid var(--border-color);
     }
     .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.92); }
 
-    /* AUTH CARD & TABS */
+    /* ACCEDI MODAL / CONTAINER */
     .auth-card {
       max-width: 440px;
       margin: 20px auto;
@@ -199,29 +198,10 @@
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 36px;
+      text-align: center;
     }
-    .auth-card h2 { font-size: 1.8rem; margin-bottom: 6px; text-align: center; }
-    .auth-card p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px; text-align: center; }
-    
-    .tab-switch-container {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 12px;
-    }
-    .tab-btn {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 6px 14px;
-      border-radius: 6px;
-    }
-    .tab-btn.active { background: var(--accent); color: #fff; }
-
+    .auth-card h2 { font-size: 1.8rem; margin-bottom: 6px; }
+    .auth-card p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px; }
     .google-btn {
       width: 100%;
       background: #fff;
@@ -259,7 +239,7 @@
       background-color: var(--bg-main);
       border: 1px solid var(--border-color);
       color: var(--text-primary);
-      padding: 11px 14px;
+      padding: 10px 14px;
       border-radius: 6px;
       font-size: 0.95rem;
     }
@@ -272,15 +252,15 @@
       overflow-x: auto;
       margin-top: 20px;
     }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem; }
-    thead { background-color: #1b1612; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem; }
-    th, td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    thead { background-color: #1b1612; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.82rem; }
+    th, td { padding: 14px 18px; border-bottom: 1px solid var(--border-color); }
     tbody tr:hover { background-color: var(--bg-surface-hover); }
 
     .badge-status {
-      padding: 4px 10px;
+      padding: 3px 8px;
       border-radius: 4px;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       font-weight: 600;
     }
     .badge-disponibile { background: rgba(46, 160, 67, 0.2); color: #3fb950; }
@@ -295,8 +275,8 @@
     }
     .footer-container { max-width: 1180px; margin: 0 auto; }
     .footer-top { display: flex; gap: 64px; flex-wrap: wrap; padding-bottom: 36px; border-bottom: 1px solid var(--border-color); }
-    .footer-col h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; }
-    .footer-col p { font-size: 0.9rem; color: var(--text-secondary); }
+    .footer-col h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; }
+    .footer-col p { font-size: 0.88rem; color: var(--text-secondary); }
     .footer-bottom { padding-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: var(--text-secondary); }
   </style>
 </head>
@@ -307,7 +287,7 @@
     <div class="nav-container">
       <div class="brand" onclick="switchView('home')">
         <div class="brand-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
           </svg>
         </div>
@@ -315,7 +295,7 @@
       </div>
 
       <nav class="nav-links" id="navLinksContainer">
-        <!-- Generato dinamicamente via JS -->
+        <!-- Generato via JS in base al login -->
       </nav>
     </div>
   </header>
@@ -334,7 +314,7 @@
       </div>
 
       <div style="margin: 40px 0;">
-        <h2 style="font-size: 2rem; margin-bottom: 20px;">Libri in evidenza</h2>
+        <h2 style="font-size: 1.8rem; margin-bottom: 20px;">Libri in evidenza</h2>
         <div id="homeEvidenzaContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
           <!-- Dinamico -->
         </div>
@@ -344,12 +324,12 @@
     <!-- CATALOGO -->
     <section id="view-catalogo" class="view-section">
       <div class="page-header" style="margin-bottom: 24px;">
-        <h1 style="font-size: 2.2rem; margin-bottom: 6px;">Catalogo</h1>
-        <p style="color: var(--text-secondary); font-size: 1.05rem;">Cerca per titolo, autore o casa editrice.</p>
+        <h1>Catalogo</h1>
+        <p style="color: var(--text-secondary);">Cerca per titolo, autore o casa editrice.</p>
       </div>
 
       <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
-        <input type="text" id="searchInput" class="form-input" style="max-width: 340px;" placeholder="Cerca nel catalogo..." oninput="handleSearch()">
+        <input type="text" id="searchInput" class="form-input" style="max-width: 320px;" placeholder="Cerca nel catalogo..." oninput="handleSearch()">
       </div>
 
       <div class="table-container">
@@ -364,7 +344,7 @@
             </tr>
           </thead>
           <tbody id="catalogTableBody">
-            <tr><td colspan="5" style="text-align:center; padding: 32px;">Caricamento catalogo...</td></tr>
+            <tr><td colspan="5" style="text-align:center; padding: 24px;">Caricamento catalogo...</td></tr>
           </tbody>
         </table>
       </div>
@@ -373,66 +353,42 @@
     <!-- ACCEDI / REGISTRATI -->
     <section id="view-accedi" class="view-section">
       <div class="auth-card">
-        <div class="tab-switch-container">
-          <button class="tab-btn active" id="tabBtnLogin" onclick="switchAuthMode('login')">Accedi</button>
-          <button class="tab-btn" id="tabBtnReg" onclick="switchAuthMode('reg')">Registrati</button>
+        <h2>Bentornato/a</h2>
+        <p>Accedi al tuo account o registrati</p>
+        
+        <button class="google-btn" onclick="simulateGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.14C3.15 21.32 7.22 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.62H1.18C.43 8.12 0 9.81 0 12s.43 3.88 1.18 5.38l4.09-3.14z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.22 0 3.15 2.68 1.18 6.62l4.09 3.14c.95-2.85 3.6-4.91 6.73-4.91z"/></svg>
+          Continua con Google
+        </button>
+
+        <div class="divider">Oppure continua con l'email</div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="tu@esempio.it">
+        </div>
+        <div class="form-group">
+          <label>Nickname</label>
+          <input type="text" id="loginNickname" class="form-input" placeholder="Il tuo nickname unico">
+        </div>
+        <div class="form-group">
+          <label>Cellulare (opzionale)</label>
+          <input type="text" id="loginPhone" class="form-input" placeholder="3331234567">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••">
         </div>
 
-        <!-- FORM ACCEDI -->
-        <div id="formLoginContainer">
-          <h2>Bentornato/a</h2>
-          <p>Accedi al tuo account</p>
-          
-          <button class="google-btn" onclick="simulateGoogleLogin()">
-            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.14C3.15 21.32 7.22 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.62H1.18C.43 8.12 0 9.81 0 12s.43 3.88 1.18 5.38l4.09-3.14z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.22 0 3.15 2.68 1.18 6.62l4.09 3.14c.95-2.85 3.6-4.91 6.73-4.91z"/></svg>
-            Accedi con Google
-          </button>
-
-          <div class="divider">Oppure con le credenziali</div>
-
-          <div class="form-group">
-            <label>Nickname o Email</label>
-            <input type="text" id="loginIdentifier" class="form-input" placeholder="Inserisci nickname o email">
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••">
-          </div>
-          <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 12px;" onclick="handleLoginSubmit()">Accedi</button>
-        </div>
-
-        <!-- FORM REGISTRAZIONE -->
-        <div id="formRegContainer" style="display:none;">
-          <h2>Crea account</h2>
-          <p>Compila tutti i campi per registrarti</p>
-          
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" id="regEmail" class="form-input" placeholder="tu@esempio.it">
-          </div>
-          <div class="form-group">
-            <label>Nickname</label>
-            <input type="text" id="regNickname" class="form-input" placeholder="Il tuo nickname unico">
-          </div>
-          <div class="form-group">
-            <label>Cellulare (opzionale)</label>
-            <input type="text" id="regPhone" class="form-input" placeholder="3331234567">
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="regPassword" class="form-input" placeholder="••••••••">
-          </div>
-          <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 12px;" onclick="handleRegisterSubmit()">Registrati</button>
-        </div>
-
+        <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="handleLoginRegister()">Accedi / Registrati</button>
       </div>
     </section>
 
     <!-- PREFERITI -->
     <section id="view-preferiti" class="view-section">
-      <div class="page-header" style="margin-bottom: 24px;">
-        <h1 style="font-size: 2.2rem; margin-bottom: 6px;">I miei preferiti</h1>
-        <p style="color: var(--text-secondary); font-size: 1.05rem;">I libri che hai salvato. Riceverai un avviso se tornano disponibili.</p>
+      <div class="page-header">
+        <h1>I miei preferiti</h1>
+        <p style="color: var(--text-secondary);">I libri che hai salvato. Riceverai un avviso se tornano disponibili.</p>
       </div>
       <div class="table-container">
         <table>
@@ -440,7 +396,7 @@
             <tr><th>Titolo</th><th>Autore</th><th>Casa editrice</th><th style="text-align: center;">Rimuovi</th></tr>
           </thead>
           <tbody id="favoritesTableBody">
-            <tr><td colspan="4" style="text-align:center; padding: 32px;">Nessun preferito salvato.</td></tr>
+            <tr><td colspan="4" style="text-align:center; padding: 24px;">Nessun preferito salvato.</td></tr>
           </tbody>
         </table>
       </div>
@@ -448,22 +404,22 @@
 
     <!-- PROFILO -->
     <section id="view-profilo" class="view-section">
-      <div class="page-header" style="margin-bottom: 24px;">
-        <h1 style="font-size: 2.2rem; margin-bottom: 6px;">Profilo</h1>
-        <p style="color: var(--text-secondary); font-size: 1.05rem;">I tuoi dati personali e statistiche di prestito.</p>
+      <div class="page-header">
+        <h1>Profilo</h1>
+        <p style="color: var(--text-secondary);">I tuoi dati personali e statistiche di prestito.</p>
       </div>
       <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
-        <h3 id="profEmail" style="font-size: 1.2rem; margin-bottom: 6px;">email@example.com</h3>
-        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 24px;">Nickname: <strong id="profNickname" style="color:var(--text-primary)"></strong></p>
+        <h3 id="profEmail" style="margin-bottom: 6px;">email@example.com</h3>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">Nickname: <strong id="profNickname" style="color:var(--text-primary)"></strong></p>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px;">
-          <div style="background: var(--bg-main); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
-            <div id="profBooksReturned" style="font-size: 1.8rem; font-weight: 700; color: var(--accent);">0</div>
-            <div style="font-size: 0.9rem; color: var(--text-secondary);">Libri restituiti</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+          <div style="background: var(--bg-main); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div id="profBooksReturned" style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">0</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Libri restituiti</div>
           </div>
-          <div style="background: var(--bg-main); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
-            <div id="profActiveLoans" style="font-size: 1.8rem; font-weight: 700;">0</div>
-            <div style="font-size: 0.9rem; color: var(--text-secondary);">Prestiti attivi</div>
+          <div style="background: var(--bg-main); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div id="profActiveLoans" style="font-size: 1.5rem; font-weight: 700;">0</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Prestiti attivi</div>
           </div>
         </div>
         <button class="btn-secondary" onclick="logoutUser()">Disconnettiti</button>
@@ -472,16 +428,16 @@
 
     <!-- LETTORI -->
     <section id="view-lettori" class="view-section">
-      <div class="page-header" style="margin-bottom: 24px;">
-        <h1 style="font-size: 2.2rem; margin-bottom: 6px;">I lettori</h1>
-        <p style="color: var(--text-secondary); font-size: 1.05rem;">Cerca un nickname e scopri i libri restituiti.</p>
+      <div class="page-header">
+        <h1>I lettori</h1>
+        <p style="color: var(--text-secondary);">Cerca un nickname e scopri i libri restituiti.</p>
       </div>
 
-      <div style="margin-bottom: 24px;">
-        <input type="text" id="searchReaderInput" class="form-input" style="max-width: 320px;" placeholder="Cerca nickname..." oninput="renderReaders()">
+      <div style="margin-bottom: 20px;">
+        <input type="text" id="searchReaderInput" class="form-input" style="max-width: 300px;" placeholder="Cerca nickname..." oninput="renderReaders()">
       </div>
 
-      <div class="table-container" style="max-width: 900px;">
+      <div class="table-container" style="max-width: 800px;">
         <table>
           <thead>
             <tr><th>Nickname</th><th>Email</th><th>Cellulare</th><th style="text-align: right;">Libri restituiti</th></tr>
@@ -495,9 +451,9 @@
 
     <!-- GESTIONE (ADMIN) -->
     <section id="view-gestione" class="view-section">
-      <div class="page-header" style="margin-bottom: 24px;">
-        <h1 style="font-size: 2.2rem; margin-bottom: 6px;">Gestione Amministrativa</h1>
-        <p style="color: var(--text-secondary); font-size: 1.05rem;">Pannello riservato alla bibliotecaria.</p>
+      <div class="page-header">
+        <h1>Gestione Amministrativa</h1>
+        <p style="color: var(--text-secondary);">Pannello riservato alla bibliotecaria.</p>
       </div>
 
       <div style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
@@ -522,8 +478,8 @@
       <!-- TAB AGGIUNGI LETTORE -->
       <div id="adminLettori" class="admin-panel" style="display:none;">
         <div class="auth-card" style="margin: 0; text-align: left; max-width: 500px;">
-          <h3 style="margin-bottom: 6px;">Invita / Aggiungi nuovo lettore</h3>
-          <p style="text-align:left; margin-bottom: 20px;">Inserisci la mail per registrare l'utente.</p>
+          <h3>Invita / Aggiungi nuovo lettore</h3>
+          <p>Inserisci la mail per registrare l'utente.</p>
           <div class="form-group"><label>Email</label><input type="email" id="newReaderEmail" class="form-input"></div>
           <div class="form-group"><label>Nickname</label><input type="text" id="newReaderNick" class="form-input"></div>
           <button class="btn-primary" onclick="adminAddNewReader()">Aggiungi lettore</button>
@@ -533,27 +489,23 @@
       <!-- TAB EVIDENZA -->
       <div id="adminEvidenza" class="admin-panel" style="display:none;">
         <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
-          <h3 style="margin-bottom: 6px;">Gestisci Libri in Evidenza</h3>
-          <p style="text-align:left; margin-bottom: 20px;">Seleziona quali libri mostrare in home page.</p>
-          <div id="adminEvidenzaChecklist" style="max-height: 320px; overflow-y: auto; margin-bottom: 20px; padding-right: 8px;"></div>
+          <h3>Gestisci Libri in Evidenza</h3>
+          <p>Seleziona quali libri mostrare in home page.</p>
+          <div id="adminEvidenzaChecklist" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;"></div>
           <button class="btn-primary" onclick="saveEvidenzaSelection()">Salva evidenza</button>
         </div>
       </div>
 
       <!-- TAB SITO (PERSONALIZZAZIONE) -->
       <div id="adminSito" class="admin-panel" style="display:none;">
-        <div class="auth-card" style="margin: 0; text-align: left; max-width: 650px;">
-          <h3 style="margin-bottom: 6px;">Personalizzazione Grafica e Testi</h3>
-          <p style="text-align:left; margin-bottom: 20px;">Modifica l'aspetto e le informazioni del sito.</p>
-          
-          <div class="form-group"><label>Colore principale (Accento)</label><input type="color" id="cfgAccent" class="form-input" style="height: 44px; padding: 4px; cursor: pointer;" value="#a83226"></div>
+        <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
+          <h3>Personalizzazione Grafica e Testi</h3>
+          <div class="form-group"><label>Colore principale (Accento)</label><input type="color" id="cfgAccent" class="form-input" value="#a83226"></div>
           <div class="form-group"><label>Testo Titolo Hero</label><input type="text" id="cfgTitle" class="form-input" value="I libri di Caltabellotta, a portata di ricerca"></div>
           <div class="form-group"><label>URL Immagine Copertina</label><input type="text" id="cfgHeroImg" class="form-input" value="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80"></div>
           <div class="form-group"><label>Indirizzo Footer</label><input type="text" id="cfgAddress" class="form-input" value="Via Cossentino, 2 - 92010 Caltabellotta (AG)"></div>
-          <div class="form-group"><label>Telefono Footer (lascia vuoto per non mostrarlo)</label><input type="text" id="cfgPhone" class="form-input" value="+39 0925 000000"></div>
-          <div class="form-group"><label>Email Footer</label><input type="email" id="cfgEmail" class="form-input" value="bibliotecacaltabellotta@gmail.com"></div>
-          
-          <button class="btn-primary" style="margin-top: 10px;" onclick="saveSiteConfig()">Salva modifiche sito</button>
+          <div class="form-group"><label>Telefono Footer</label><input type="text" id="cfgPhone" class="form-input" value="+39 0925 000000"></div>
+          <button class="btn-primary" onclick="saveSiteConfig()">Salva modifiche sito</button>
         </div>
       </div>
     </section>
@@ -563,7 +515,7 @@
     <div class="footer-container">
       <div class="footer-top">
         <div class="footer-col"><h4>Indirizzo</h4><p id="footerAddressText">Via Cossentino, 2<br>92010 Caltabellotta (AG)</p></div>
-        <div class="footer-col"><h4>Contatti</h4><p>Email: <span id="footerEmailText">bibliotecacaltabellotta@gmail.com</span><span id="footerPhoneContainer"><br>Tel: <span id="footerPhoneText">+39 0925 000000</span></span></p></div>
+        <div class="footer-col"><h4>Contatti</h4><p>Email: bibliotecacaltabellotta@gmail.com<br>Tel: <span id="footerPhoneText">+39 0925 000000</span></p></div>
       </div>
       <div class="footer-bottom">
         <div><strong>Biblioteca di Caltabellotta</strong> | Biblioteca comunale</div>
@@ -573,7 +525,7 @@
   </footer>
 
   <script>
-    // Link CSV ufficiale del tuo Google Sheet
+    // Link CSV ufficiale del tuo Google Sheet integrato
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
     const FALLBACK_BOOKS = [
@@ -586,26 +538,12 @@
     let allBooks = JSON.parse(localStorage.getItem('biblio_books')) || FALLBACK_BOOKS;
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
     let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
-    
     let readers = JSON.parse(localStorage.getItem('biblio_readers')) || [
-      { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", restituiti: 0 },
-      { nickname: "MarioRossi", email: "mario@example.com", cellulare: "3331111111", password: "password", restituiti: 2 }
+      { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", restituiti: 0 },
+      { nickname: "MarioRossi", email: "mario@example.com", cellulare: "3331111111", restituiti: 2 }
     ];
-
-    // Assicura sempre che l'admin esista nei lettori con password corretta
-    if(!readers.some(r => r.email === "bibliotecacaltabellotta@gmail.com")) {
-      readers.unshift({ nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", restituiti: 0 });
-    }
-
     let evidenzaList = JSON.parse(localStorage.getItem('biblio_evidenza')) || [];
-    let siteConfig = JSON.parse(localStorage.getItem('biblio_config')) || { 
-      accent: "#a83226", 
-      title: "I libri di Caltabellotta, a portata di ricerca", 
-      heroImg: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80", 
-      address: "Via Cossentino, 2 - 92010 Caltabellotta (AG)", 
-      phone: "+39 0925 000000",
-      email: "bibliotecacaltabellotta@gmail.com"
-    };
+    let siteConfig = JSON.parse(localStorage.getItem('biblio_config')) || { accent: "#a83226", title: "I libri di Caltabellotta, a portata di ricerca", heroImg: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80", address: "Via Cossentino, 2 - 92010 Caltabellotta (AG)", phone: "+39 0925 000000" };
 
     function initSiteConfig() {
       document.documentElement.style.setProperty('--accent', siteConfig.accent);
@@ -613,17 +551,7 @@
       document.getElementById('homeMainTitle').innerHTML = siteConfig.title.replace('ricerca', '<span>ricerca</span>');
       document.getElementById('heroImageTag').src = siteConfig.heroImg;
       document.getElementById('footerAddressText').innerHTML = siteConfig.address.replace(' - ', '<br>');
-      
-      document.getElementById('footerEmailText').innerText = siteConfig.email || "bibliotecacaltabellotta@gmail.com";
-      
-      const phoneContainer = document.getElementById('footerPhoneContainer');
-      const phoneText = document.getElementById('footerPhoneText');
-      if (siteConfig.phone && siteConfig.phone.trim() !== "") {
-        phoneText.innerText = siteConfig.phone;
-        phoneContainer.style.display = "inline";
-      } else {
-        phoneContainer.style.display = "none";
-      }
+      document.getElementById('footerPhoneText').innerText = siteConfig.phone;
     }
 
     function switchView(viewName) {
@@ -634,7 +562,7 @@
       if(viewName === 'preferiti') renderFavorites();
       if(viewName === 'profilo') renderProfile();
       if(viewName === 'lettori') renderReaders();
-      if(viewName === 'gestione') { renderAdminPrestiti(); loadConfigToAdmin(); }
+      if(viewName === 'gestione') renderAdminPrestiti();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -661,20 +589,6 @@
       nav.innerHTML = html;
     }
 
-    function switchAuthMode(mode) {
-      if(mode === 'login') {
-        document.getElementById('formLoginContainer').style.display = 'block';
-        document.getElementById('formRegContainer').style.display = 'none';
-        document.getElementById('tabBtnLogin').classList.add('active');
-        document.getElementById('tabBtnReg').classList.remove('active');
-      } else {
-        document.getElementById('formLoginContainer').style.display = 'none';
-        document.getElementById('formRegContainer').style.display = 'block';
-        document.getElementById('tabBtnReg').classList.add('active');
-        document.getElementById('tabBtnLogin').classList.remove('active');
-      }
-    }
-
     // CSV PARSER
     function parseCSV(text) {
       const rows = []; let row = []; let val = ''; let q = false;
@@ -692,28 +606,17 @@
     }
 
     async function loadBooks() {
-      if (GOOGLE_SHEET_CSV_URL) {
+      if (GOOGLE_SHEET_CSV_URL && GOOGLE_SHEET_CSV_URL !== "INCOLLA_QUI_IL_TUO_LINK_CSV") {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
           const txt = await res.text();
           const rows = parseCSV(txt);
-          const csvBooks = rows.slice(1).filter(r => r[0] || r[1]).map(r => ({
-            titolo: r[0] || r[1] || '—',
-            autore: r[1] && r[0] ? r[1] : (r[2] || '—'),
-            casa: r[3] || '—',
-            stato: 'Disponibile',
-            assegnato: '',
-            rientro: ''
-          }));
-          if(csvBooks.length > 0) {
-            allBooks = csvBooks.map(cb => {
-              let existing = allBooks.find(b => b.titolo === cb.titolo);
-              return existing ? { ...cb, stato: existing.stato, assegnato: existing.assegnato, rientro: existing.rientro } : cb;
-            });
-          }
+          allBooks = rows.slice(1).filter(r => r[0]).map(r => {
+            let existing = allBooks.find(b => b.titolo === r[0]);
+            return existing || { titolo: r[0], autore: r[1] || '—', casa: r[3] || '—', stato: 'Disponibile', assegnato: '', rientro: '' };
+          });
         } catch(e) {}
       }
-      localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       renderCatalog();
       renderHomeEvidenza();
     }
@@ -723,8 +626,203 @@
       const tbody = document.getElementById('catalogTableBody');
       const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(query) || b.autore.toLowerCase().includes(query) || b.casa.toLowerCase().includes(query));
       
-      if(!filtered.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:32px;">Nessun libro trovato.</td></tr>`; return; }
+      if(!filtered.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px;">Nessun libro trovato.</td></tr>`; return; }
 
       tbody.innerHTML = filtered.map(b => {
         const isFav = favorites.some(f => f.titolo === b.titolo);
-        const badge = b.stato === 'Disponibile' ? `<span class="badge-status badge-disponibile">Disponibile</span>` : `<span
+        const badge = b.stato === 'Disponibile' ? `<span class="badge-status badge-disponibile">Disponibile</span>` : `<span class="badge-status badge-prestato">In Prestito</span>`;
+        return `
+          <tr>
+            <td style="font-weight:600;">${b.titolo}</td>
+            <td>${b.autore}</td>
+            <td>${b.casa}</td>
+            <td>${badge}</td>
+            <td style="text-align:center;"><button style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:${isFav?'var(--accent)':'var(--text-muted)'}" onclick="toggleFavorite('${b.titolo}')">${isFav?'♥':'♡'}</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function toggleFavorite(titolo) {
+      if(!currentUser) { alert('Effettua l\'accesso per salvare i preferiti.'); switchView('accedi'); return; }
+      const book = allBooks.find(b => b.titolo === titolo);
+      const idx = favorites.findIndex(f => f.titolo === titolo);
+      if(idx > -1) favorites.splice(idx, 1); else favorites.push(book);
+      localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
+      renderCatalog();
+    }
+
+    function renderHomeEvidenza() {
+      const container = document.getElementById('homeEvidenzaContainer');
+      const evBooks = allBooks.filter(b => evidenzaList.includes(b.titolo));
+      if(!evBooks.length) { container.innerHTML = `<p style="color:var(--text-secondary);">Nessun libro in evidenza per ora.</p>`; return; }
+      container.innerHTML = evBooks.map(b => `
+        <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:20px;">
+          <h4 style="margin-bottom:6px;">${b.titolo}</h4>
+          <p style="color:var(--text-secondary); font-size:0.85rem;">${b.autore} - ${b.casa}</p>
+        </div>
+      `).join('');
+    }
+
+    // LOGIN & REGISTRATION
+    function handleLoginRegister() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const nickname = document.getElementById('loginNickname').value.trim();
+      const cellulare = document.getElementById('loginPhone').value.trim();
+      const pass = document.getElementById('loginPassword').value;
+
+      if(!email || !nickname || !pass) { alert('Compila tutti i campi obbligatori.'); return; }
+      
+      if(readers.some(r => r.nickname === nickname && r.email !== email)) {
+        alert('Questo nickname è già occupato da un altro utente. Scegline un altro.');
+        return;
+      }
+
+      currentUser = { email, nickname, cellulare };
+      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+
+      let reader = readers.find(r => r.email === email);
+      if(!reader) {
+        readers.push({ nickname, email, cellulare, restituiti: 0 });
+      } else {
+        reader.nickname = nickname;
+        reader.cellulare = cellulare;
+      }
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+
+      alert('Accesso effettuato con successo!');
+      switchView('home');
+    }
+
+    function simulateGoogleLogin() {
+      currentUser = { email: "utente.google@gmail.com", nickname: "GoogleUser", cellulare: "3339999999" };
+      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+      if(!readers.some(r => r.email === currentUser.email)) readers.push({ nickname: currentUser.nickname, email: currentUser.email, cellulare: currentUser.cellulare, restituiti: 0 });
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      alert('Accesso con Google completato!');
+      switchView('home');
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      localStorage.removeItem('biblio_current_user');
+      switchView('home');
+    }
+
+    function renderProfile() {
+      if(!currentUser) { switchView('accedi'); return; }
+      document.getElementById('profEmail').innerText = currentUser.email;
+      document.getElementById('profNickname').innerText = currentUser.nickname;
+      let r = readers.find(x => x.email === currentUser.email) || { restituiti: 0 };
+      document.getElementById('profBooksReturned').innerText = r.restituiti;
+    }
+
+    function renderReaders() {
+      const query = (document.getElementById('searchReaderInput')?.value || '').toLowerCase();
+      const tbody = document.getElementById('readersTableBody');
+      const filtered = readers.filter(r => r.nickname.toLowerCase().includes(query));
+      
+      tbody.innerHTML = filtered.map(r => `
+        <tr>
+          <td style="font-weight:600;">${r.nickname}</td>
+          <td>${r.email}</td>
+          <td>${r.cellulare || '—'}</td>
+          <td style="text-align:right;"><span style="background:var(--bg-main); padding:2px 10px; border-radius:12px; border:1px solid var(--border-color);">${r.restituiti}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // ADMIN GESTIONE
+    function switchAdminTab(tab) {
+      ['Prestiti','Lettori','Evidenza','Sito'].forEach(t => {
+        document.getElementById('admin'+t).style.display = (t.toLowerCase() === tab) ? 'block' : 'none';
+        document.getElementById('admTab'+t).classList.remove('active-tab');
+      });
+      document.getElementById('admTab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active-tab');
+      if(tab === 'prestiti') renderAdminPrestiti();
+      if(tab === 'evidenza') renderAdminEvidenzaChecklist();
+    }
+
+    function renderAdminPrestiti() {
+      const tbody = document.getElementById('adminPrestitiBody');
+      tbody.innerHTML = allBooks.map((b, idx) => `
+        <tr>
+          <td>${b.titolo}</td>
+          <td><span class="badge-status ${b.stato==='Disponibile'?'badge-disponibile':'badge-prestato'}">${b.stato}</span></td>
+          <td><input type="email" id="assign_email_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.assegnato||''}" placeholder="email utente"></td>
+          <td><input type="date" id="assign_date_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.rientro||''}"></td>
+          <td>
+            ${b.stato==='Disponibile' ? 
+              `<button class="btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="setBookPrestito(${idx}, true)">Metti Prestito</button>` : 
+              `<button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="setBookPrestito(${idx}, false)">Registra Restituzione</button>`}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function setBookPrestito(idx, isPrestito) {
+      const emailInput = document.getElementById(`assign_email_${idx}`).value.trim();
+      const dateInput = document.getElementById(`assign_date_${idx}`).value;
+      
+      if(isPrestito && !emailInput) { alert('Inserisci la mail dell\'utente a cui assegnare il libro.'); return; }
+
+      allBooks[idx].stato = isPrestito ? 'In Prestito' : 'Disponibile';
+      allBooks[idx].assegnato = isPrestito ? emailInput : '';
+      allBooks[idx].rientro = isPrestito ? dateInput : '';
+
+      if(!isPrestito && emailInput) {
+        let reader = readers.find(r => r.email === emailInput);
+        if(reader) { reader.restituiti = (reader.restituiti || 0) + 1; }
+      }
+
+      localStorage.setItem('biblio_books', JSON.stringify(allBooks));
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      renderAdminPrestiti();
+      alert('Stato aggiornato con successo!');
+    }
+
+    function adminAddNewReader() {
+      const email = document.getElementById('newReaderEmail').value.trim();
+      const nickname = document.getElementById('newReaderNick').value.trim();
+      if(!email || !nickname) { alert('Inserisci email e nickname.'); return; }
+      if(readers.some(r => r.nickname === nickname)) { alert('Nickname già esistente.'); return; }
+      readers.push({ nickname, email, cellulare: '', restituiti: 0 });
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      alert('Lettore aggiunto con successo!');
+    }
+
+    function renderAdminEvidenzaChecklist() {
+      const container = document.getElementById('adminEvidenzaChecklist');
+      container.innerHTML = allBooks.map(b => `
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.9rem; cursor:pointer;">
+          <input type="checkbox" value="${b.titolo}" ${evidenzaList.includes(b.titolo)?'checked':''} class="ev-chk"> ${b.titolo}
+        </label>
+      `).join('');
+    }
+
+    function saveEvidenzaSelection() {
+      evidenzaList = Array.from(document.querySelectorAll('.ev-chk:checked')).map(el => el.value);
+      localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
+      alert('Libri in evidenza salvati!');
+      renderHomeEvidenza();
+    }
+
+    function saveSiteConfig() {
+      siteConfig.accent = document.getElementById('cfgAccent').value;
+      siteConfig.title = document.getElementById('cfgTitle').value;
+      siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
+      siteConfig.address = document.getElementById('cfgAddress').value;
+      siteConfig.phone = document.getElementById('cfgPhone').value;
+      localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
+      initSiteConfig();
+      alert('Personalizzazioni salvate!');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initSiteConfig();
+      renderNavbar();
+      loadBooks();
+    });
+  </script>
+</body>
+</html>
