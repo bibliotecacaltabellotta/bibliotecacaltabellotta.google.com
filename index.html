@@ -263,7 +263,7 @@
       color: var(--text-primary);
       padding: 10px 14px;
       border-radius: 6px;
-      font-size: 0.95prpx;
+      font-size: 0.95rem;
     }
     .toggle-pass {
       position: absolute;
@@ -375,12 +375,13 @@
               <th>Autore</th>
               <th>Casa editrice</th>
               <th>Anno</th>
+              <th id="thCatalogCm" style="display:none;">Cm</th>
               <th>Stato Prestito</th>
               <th style="text-align: center;">Preferito</th>
             </tr>
           </thead>
           <tbody id="catalogTableBody">
-            <tr><td colspan="7" style="text-align:center; padding: 24px;">Caricamento catalogo...</td></tr>
+            <tr><td colspan="8" style="text-align:center; padding: 24px;">Caricamento catalogo...</td></tr>
           </tbody>
         </table>
       </div>
@@ -574,6 +575,9 @@
 
       <!-- TAB PRESTITI -->
       <div id="adminPrestiti" class="admin-panel">
+        <div style="margin-bottom: 20px;">
+          <input type="text" id="adminPrestitiSearch" class="form-input" style="max-width: 320px;" placeholder="Cerca libro nei prestiti..." oninput="renderAdminPrestiti()">
+        </div>
         <div class="table-container">
           <table>
             <thead>
@@ -646,7 +650,7 @@
   <footer>
     <div class="footer-container">
       <div class="footer-top" id="footerTopContainer">
-        <!-- Dinamico in base ai campi compilati -->
+        <!-- Dinamico -->
       </div>
       <div class="footer-bottom">
         <div><strong>Biblioteca di Caltabellotta</strong> | Biblioteca comunale</div>
@@ -659,9 +663,9 @@
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
     const FALLBACK_BOOKS = [
-      { catalogazione: "001", titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori", anno: "1982", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
-      { catalogazione: "002", titolo: "25 agosto 1983 ed altri racconti inediti", autore: "Borges Jorge Luis", casa: "Ricci Franco Maria Ed", anno: "1990", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
-      { catalogazione: "003", titolo: "Addio a Berlino", autore: "Isherwood", casa: "Garzanti", anno: "1975", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" }
+      { catalogazione: "001", titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori", anno: "1982", cm: "20cm", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
+      { catalogazione: "002", titolo: "25 agosto 1983 ed altri racconti inediti", autore: "Borges Jorge Luis", casa: "Ricci Franco Maria Ed", anno: "1990", cm: "22cm", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
+      { catalogazione: "003", titolo: "Addio a Berlino", autore: "Isherwood", casa: "Garzanti", anno: "1975", cm: "19cm", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" }
     ];
 
     let allBooks = JSON.parse(localStorage.getItem('biblio_books')) || FALLBACK_BOOKS;
@@ -712,7 +716,6 @@
       document.getElementById('homeMainDesc').innerText = siteConfig.desc || "";
       document.getElementById('heroImageTag').src = siteConfig.heroImg;
 
-      // Footer dinamico
       let footerHTML = '';
       if(siteConfig.address) footerHTML += `<div class="footer-col"><h4>Indirizzo</h4><p>${siteConfig.address.replace(' - ', '<br>')}</p></div>`;
       if(siteConfig.hours) footerHTML += `<div class="footer-col"><h4>Orari di apertura</h4><p>${siteConfig.hours}</p></div>`;
@@ -785,7 +788,6 @@
       }
     }
 
-    // PARSER CSV
     function parseCSV(text) {
       const rows = []; let row = []; let val = ''; let q = false;
       for (let i = 0; i < text.length; i++) {
@@ -808,11 +810,12 @@
           const txt = await res.text();
           const rows = parseCSV(txt);
           const csvBooks = rows.slice(1).filter(r => r[0] || r[1]).map((r, idx) => ({
-            catalogazione: r[4] || String(idx + 1).padStart(3, '0'),
+            catalogazione: r[2] || String(idx + 1).padStart(3, '0'), // Colonna C
             titolo: r[0] || r[1] || '—',
             autore: r[1] && r[0] ? r[1] : (r[2] || '—'),
             casa: r[3] || '—',
-            anno: r[5] || '—',
+            anno: r[4] || '—', // Colonna E
+            cm: r[5] || '—',     // Colonna F
             stato: 'Disponibile',
             assegnato: '',
             dataPrestito: '',
@@ -838,17 +841,21 @@
       const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
       const tbody = document.getElementById('catalogTableBody');
       const thCat = document.getElementById('thCatalogCat');
+      const thCm = document.getElementById('thCatalogCm');
       
       if(isAdmin()) {
         thCat.style.display = 'table-cell';
+        thCm.style.display = 'table-cell';
       } else {
         thCat.style.display = 'none';
+        thCm.style.display = 'none';
       }
 
       const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(query) || b.autore.toLowerCase().includes(query) || b.casa.toLowerCase().includes(query));
       
       if(!filtered.length) { 
-        tbody.innerHTML = `<tr><td colspan="${isAdmin()?7:6}" style="text-align:center; padding:32px;">Nessun libro trovato.</td></tr>`; 
+        let colSpan = isAdmin() ? 8 : 6;
+        tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; padding:32px;">Nessun libro trovato.</td></tr>`; 
         return; 
       }
 
@@ -856,6 +863,7 @@
         const isFav = favorites.some(f => f.titolo === b.titolo);
         const badge = b.stato === 'Disponibile' ? `<span class="badge-status badge-disponibile">Disponibile</span>` : `<span class="badge-status badge-prestato">Non disponibile</span>`;
         let catTd = isAdmin() ? `<td>${b.catalogazione || '—'}</td>` : '';
+        let cmTd = isAdmin() ? `<td>${b.cm || '—'}</td>` : '';
         return `
           <tr>
             ${catTd}
@@ -863,6 +871,7 @@
             <td>${b.autore}</td>
             <td>${b.casa}</td>
             <td>${b.anno || '—'}</td>
+            ${cmTd}
             <td>${badge}</td>
             <td style="text-align:center;"><button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:${isFav?'var(--accent)':'var(--text-muted)'}" onclick="toggleFavorite('${b.titolo.replace(/'/g, "\\'")}')">${isFav?'♥':'♡'}</button></td>
           </tr>
@@ -881,6 +890,7 @@
       if(idx > -1) favorites.splice(idx, 1); else favorites.push(book);
       localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
       renderCatalog();
+      renderHomeEvidenza();
       if(document.getElementById('view-preferiti').classList.contains('active')) renderFavorites();
     }
 
@@ -904,12 +914,27 @@
       const container = document.getElementById('homeEvidenzaContainer');
       const evBooks = allBooks.filter(b => evidenzaList.includes(b.titolo));
       if(!evBooks.length) { container.innerHTML = `<p style="color:var(--text-secondary);">Nessun libro in evidenza per ora.</p>`; return; }
-      container.innerHTML = evBooks.map(b => `
-        <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:20px;">
-          <h4 style="margin-bottom:6px; font-size:1.05rem;">${b.titolo}</h4>
-          <p style="color:var(--text-secondary); font-size:0.88rem;">${b.autore} - ${b.casa} (${b.anno})</p>
-        </div>
-      `).join('');
+      
+      container.innerHTML = evBooks.map(b => {
+        const isFav = favorites.some(f => f.titolo === b.titolo);
+        const statusBadge = b.stato === 'Disponibile' 
+          ? `<span class="badge-status badge-disponibile" style="display:inline-block; margin-top:8px;">Disponibile</span>` 
+          : `<span class="badge-status badge-prestato" style="display:inline-block; margin-top:8px;">Non disponibile</span>`;
+        
+        let favButton = '';
+        if(currentUser) {
+          favButton = `<button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:${isFav?'var(--accent)':'var(--text-muted)'}; float:right;" onclick="toggleFavorite('${b.titolo.replace(/'/g, "\\'")}')">${isFav?'♥':'♡'}</button>`;
+        }
+
+        return `
+          <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:20px; position:relative;">
+            ${favButton}
+            <h4 style="margin-bottom:6px; font-size:1.05rem; padding-right:24px;">${b.titolo}</h4>
+            <p style="color:var(--text-secondary); font-size:0.88rem;">${b.autore} - ${b.casa} (${b.anno})</p>
+            <div>${statusBadge}</div>
+          </div>
+        `;
+      }).join('');
     }
 
     // ACCESSO E REGISTRAZIONE
@@ -1016,12 +1041,10 @@
       document.getElementById('profNickInput').value = reader.nickname || '';
       document.getElementById('profPassInput').value = reader.password || '';
 
-      // Prestiti attivi dell'utente (assegnati ad email)
       let active = allBooks.filter(b => b.assegnato === reader.email);
       document.getElementById('profActiveLoansCount').innerText = active.length;
       document.getElementById('profActiveLoansList').innerHTML = active.length ? active.map(b => `• <strong>${b.titolo}</strong> (${b.autore}) - Scadenza: ${b.rientro || 'N/D'}`).join('<br>') : 'Nessun prestito attivo.';
 
-      // Libri restituiti
       let returned = reader.returnedBooks || [];
       document.getElementById('profBooksReturnedCount').innerText = returned.length;
       document.getElementById('profReturnedLoansList').innerHTML = returned.length ? returned.map(b => `• <strong>${b.titolo}</strong> (${b.autore})`).join('<br>') : 'Nessun libro restituito.';
@@ -1063,7 +1086,6 @@
       tbody.innerHTML = filtered.map(r => {
         let returnedCount = (r.returnedBooks || []).length;
         let adminBadge = (r.email === "bibliotecacaltabellotta@gmail.com") ? ' <span style="color:var(--accent);">★ [Admin]</span>' : '';
-        
         let clickAction = isAdmin() ? `onclick="openUserCard('${r.email}')" style="cursor:pointer; color:var(--text-primary); font-weight:600;"` : `style="font-weight:600;"`;
 
         return `
@@ -1095,7 +1117,7 @@
       document.getElementById('schActCount').innerText = act.length;
       document.getElementById('schActList').innerHTML = act.length ? act.map(b => `• ${b.titolo} (Scadenza: ${b.rientro || 'N/D'})`).join('<br>') : 'Nessun prestito attivo.';
 
-      let userFavs = favorites; // o preferiti salvati
+      let userFavs = favorites;
       document.getElementById('schFavList').innerHTML = userFavs.length ? userFavs.map(b => `• ${b.titolo}`).join('<br>') : 'Nessun preferito.';
 
       document.getElementById('schAdminNotes').value = r.adminNotes || '';
@@ -1126,9 +1148,12 @@
 
     function renderAdminPrestiti() {
       const tbody = document.getElementById('adminPrestitiBody');
-      const readerEmails = readers.map(r => r.email);
+      const searchVal = (document.getElementById('adminPrestitiSearch')?.value || '').toLowerCase();
+      
+      const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(searchVal) || b.autore.toLowerCase().includes(searchVal));
 
-      tbody.innerHTML = allBooks.map((b, idx) => {
+      tbody.innerHTML = filtered.map((b) => {
+        let idx = allBooks.findIndex(item => item.titolo === b.titolo);
         let isDisp = b.stato === 'Disponibile';
         return `
           <tr>
@@ -1165,7 +1190,6 @@
       let vecchioAssegnatario = libro.assegnato;
 
       if(nuovoStato === 'Disponibile' && vecchioAssegnatario) {
-        // Registra restituzione nello storico dell'utente se è una mail registrata
         let r = readers.find(x => x.email === vecchioAssegnatario);
         if(r) {
           if(!r.returnedBooks) r.returnedBooks = [];
@@ -1186,6 +1210,8 @@
       localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       localStorage.setItem('biblio_readers', JSON.stringify(readers));
       renderAdminPrestiti();
+      renderCatalog();
+      renderHomeEvidenza();
       alert('Stato prestito aggiornato!');
     }
 
@@ -1251,7 +1277,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Controllo se c'è un parametro email nell'URL (da link invito)
       const urlParams = new URLSearchParams(window.location.search);
       const inviteEmail = urlParams.get('email');
       if(inviteEmail) {
