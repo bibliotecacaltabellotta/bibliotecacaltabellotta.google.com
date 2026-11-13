@@ -459,15 +459,15 @@
     <section id="view-preferiti" class="view-section">
       <div class="page-header">
         <h1>I miei preferiti</h1>
-        <p style="color: var(--text-secondary);">I libri che hai salvato.</p>
+        <p style="color: var(--text-secondary);">I libri che hai salvato e la loro disponibilità.</p>
       </div>
       <div class="table-container">
         <table>
           <thead>
-            <tr><th>Titolo</th><th>Autore</th><th>Casa editrice</th><th style="text-align: center;">Rimuovi</th></tr>
+            <tr><th>Titolo</th><th>Autore</th><th>Casa editrice</th><th>Disponibilità</th><th style="text-align: center;">Rimuovi</th></tr>
           </thead>
           <tbody id="favoritesTableBody">
-            <tr><td colspan="4" style="text-align:center; padding: 24px;">Nessun preferito salvato.</td></tr>
+            <tr><td colspan="5" style="text-align:center; padding: 24px;">Nessun preferito salvato.</td></tr>
           </tbody>
         </table>
       </div>
@@ -831,7 +831,6 @@
           }
         } catch(e) {}
       }
-      // Ordinamento alfabetico per titolo
       allBooks.sort((a, b) => a.titolo.localeCompare(b.titolo));
       localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       renderCatalog();
@@ -898,17 +897,27 @@
     function renderFavorites() {
       const tbody = document.getElementById('favoritesTableBody');
       if(!favorites.length) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 32px;">Nessun preferito salvato.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px;">Nessun preferito salvato.</td></tr>`;
         return;
       }
-      tbody.innerHTML = favorites.map(b => `
-        <tr>
-          <td style="font-weight:600;">${b.titolo}</td>
-          <td>${b.autore}</td>
-          <td>${b.casa}</td>
-          <td style="text-align:center;"><button class="btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="toggleFavorite('${b.titolo.replace(/'/g, "\\'")}'); renderFavorites();">Rimuovi</button></td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = favorites.map(fBook => {
+        // Recupera sempre i dati aggiornati del libro dal catalogo principale per verificarne la disponibilità reale
+        const liveBook = allBooks.find(b => b.titolo === fBook.titolo) || fBook;
+        const isDisp = liveBook.stato === 'Disponibile';
+        const badge = isDisp 
+          ? `<span class="badge-status badge-disponibile">Disponibile</span>` 
+          : `<span class="badge-status badge-prestato">Non disponibile</span>`;
+
+        return `
+          <tr>
+            <td style="font-weight:600;">${liveBook.titolo}</td>
+            <td>${liveBook.autore}</td>
+            <td>${liveBook.casa}</td>
+            <td>${badge}</td>
+            <td style="text-align:center;"><button class="btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="toggleFavorite('${liveBook.titolo.replace(/'/g, "\\'")}'); renderFavorites();">Rimuovi</button></td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderHomeEvidenza() {
@@ -1213,14 +1222,21 @@
       renderAdminPrestiti();
       renderCatalog();
       renderHomeEvidenza();
+      if(document.getElementById('view-preferiti').classList.contains('active')) renderFavorites();
       alert('Stato prestito aggiornato!');
     }
 
     function sendInviteEmail() {
       const email = document.getElementById('inviteEmail').value.trim();
       if(!email) { alert('Inserisci un indirizzo email.'); return; }
+      
       const linkReg = window.location.href.split('#')[0] + "?email=" + encodeURIComponent(email);
-      alert(`Simulazione invio email automatica da bibliotecacaltabellotta@gmail.com a ${email}:\n\n"Ciao! Sei invitato/a nella Biblioteca di Caltabellotta. Registrati qui: ${linkReg}"`);
+      const subject = encodeURIComponent("Invito alla Biblioteca di Caltabellotta");
+      const body = encodeURIComponent(`Ciao!\n\nSei invitato/a a registrarti nella Biblioteca di Caltabellotta.\n\nClicca sul link sottostante per completare la registrazione con la tua email:\n${linkReg}\n\nTi aspettiamo!`);
+      
+      // Apre direttamente il client di posta predefinito con l'email mittente dell'admin e i dati compilati
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      
       document.getElementById('inviteEmail').value = '';
     }
 
