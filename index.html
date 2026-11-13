@@ -18,18 +18,16 @@
       --text-primary: #f5f2ed;
       --text-secondary: #a89f94;
       --text-muted: #7a7167;
+      --font-family: 'Inter', sans-serif;
+      --heading-font: 'Lora', Georgia, serif;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: var(--bg-main);
       color: var(--text-primary);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-family);
       line-height: 1.6;
       min-height: 100vh;
       display: flex;
@@ -37,15 +35,12 @@
     }
 
     h1, h2, h3, .serif {
-      font-family: 'Lora', Georgia, serif;
+      font-family: var(--heading-font);
       font-weight: 700;
       letter-spacing: -0.01em;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+    a { color: inherit; text-decoration: none; }
 
     /* NAVBAR */
     header {
@@ -90,7 +85,7 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 12px;
       font-size: 0.9rem;
       color: var(--text-secondary);
       flex-wrap: wrap;
@@ -111,10 +106,7 @@
       transition: all 0.2s;
     }
 
-    .nav-links button:hover {
-      color: var(--text-primary);
-    }
-
+    .nav-links button:hover { color: var(--text-primary); }
     .nav-links button.active-tab {
       border-color: var(--accent);
       color: var(--text-primary);
@@ -135,10 +127,7 @@
       font-size: 0.9rem;
       transition: background 0.2s;
     }
-
-    .btn-primary:hover {
-      background-color: var(--accent-hover) !important;
-    }
+    .btn-primary:hover { background-color: var(--accent-hover) !important; }
 
     .btn-secondary {
       background-color: var(--bg-surface);
@@ -150,12 +139,9 @@
       cursor: pointer;
       transition: background 0.2s;
     }
+    .btn-secondary:hover { background-color: var(--bg-surface-hover); }
 
-    .btn-secondary:hover {
-      background-color: var(--bg-surface-hover);
-    }
-
-    /* MAIN CONTAINER */
+    /* MAIN */
     main {
       flex: 1;
       max-width: 1180px;
@@ -164,21 +150,36 @@
       padding: 40px 24px 80px;
     }
 
-    .view-section {
-      display: none;
-    }
-
-    .view-section.active {
-      display: block;
-      animation: fadeIn 0.25s ease;
-    }
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeIn 0.25s ease; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* HOME PAGE */
+    /* HOME */
+    .hero-top-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .hero-title {
+      font-size: 3.2rem;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      max-width: 800px;
+    }
+    .hero-title span { color: var(--accent); font-style: italic; }
+    .hero-desc {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      max-width: 650px;
+      margin-bottom: 32px;
+    }
     .hero-banner {
       width: 100%;
       height: 440px;
@@ -186,311 +187,84 @@
       overflow: hidden;
       margin: 24px 0 64px;
       border: 1px solid var(--border-color);
-      position: relative;
     }
+    .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.92); }
 
-    .hero-banner img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: brightness(0.92);
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr 1fr 1fr;
-      gap: 32px;
-      padding: 48px 0;
-      border-top: 1px solid var(--border-color);
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .features-grid h2 {
-      font-size: 2rem;
-      line-height: 1.25;
-    }
-
-    .feature-item svg {
-      color: var(--accent);
-      margin-bottom: 14px;
-    }
-
-    .feature-item h3 {
-      font-family: 'Inter', sans-serif;
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .feature-item p {
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-    }
-
-    .home-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 56px 0;
-      border-bottom: 1px solid var(--border-color);
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-
-    .home-row h2 {
-      font-size: 2rem;
-      margin-bottom: 8px;
-    }
-
-    .home-row p {
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-    }
-
-    /* CATALOGO */
-    .page-header {
-      margin-bottom: 28px;
-    }
-
-    .page-header h1 {
-      font-size: 2.1rem;
-      margin-bottom: 6px;
-    }
-
-    .page-header p {
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-    }
-
-    .search-bar-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    .search-input-box {
-      position: relative;
-      width: 300px;
-      max-width: 100%;
-    }
-
-    .search-input-box svg {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-    }
-
-    .search-input-box input {
-      width: 100%;
+    /* ACCEDI MODAL / CONTAINER */
+    .auth-card {
+      max-width: 440px;
+      margin: 20px auto;
       background-color: var(--bg-surface);
       border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      padding: 10px 14px 10px 38px;
+      border-radius: 12px;
+      padding: 36px;
+      text-align: center;
+    }
+    .auth-card h2 { font-size: 1.8rem; margin-bottom: 6px; }
+    .auth-card p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px; }
+    .google-btn {
+      width: 100%;
+      background: #fff;
+      color: #333;
+      border: 1px solid var(--border-color);
+      padding: 11px;
       border-radius: 6px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-
-    .search-input-box input:focus {
-      border-color: var(--accent);
-    }
-
-    .search-filters {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-      flex-wrap: wrap;
-    }
-
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      font-weight: 500;
       cursor: pointer;
-      color: var(--text-primary);
-    }
-
-    .checkbox-label input[type="checkbox"] {
-      accent-color: var(--accent);
-      width: 15px;
-      height: 15px;
-      cursor: pointer;
-    }
-
-    /* TABELLA CATALOGO */
-    .table-container {
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.9rem;
-    }
-
-    thead {
-      background-color: #1b1612;
-      border-bottom: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      font-size: 0.82rem;
-    }
-
-    th, td {
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    tbody tr:hover {
-      background-color: var(--bg-surface-hover);
-    }
-
-    .book-title {
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .book-meta {
-      color: var(--text-secondary);
-    }
-
-    .fav-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 1.15rem;
-      transition: transform 0.15s, color 0.15s;
-    }
-
-    .fav-btn:hover {
-      transform: scale(1.15);
-      color: var(--accent);
-    }
-
-    .fav-btn.saved {
-      color: var(--accent);
-    }
-
-    /* PAGINAZIONE */
-    .pagination {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      margin-top: 28px;
-      font-size: 0.88rem;
+      gap: 10px;
+      margin-bottom: 20px;
     }
-
-    .page-btn {
-      background: none;
-      border: 1px solid transparent;
-      color: var(--text-secondary);
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .page-btn:hover:not(:disabled) {
-      color: var(--text-primary);
-      background-color: var(--bg-surface);
-    }
-
-    .page-btn.active {
-      background-color: var(--bg-surface);
-      border-color: var(--border-color);
-      color: var(--text-primary);
-      font-weight: 600;
-    }
-
-    .page-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    /* CARDS & ALTRE PAGINE */
-    .card-box {
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 28px;
-      margin-bottom: 24px;
-    }
-
-    .empty-state {
+    .divider {
+      display: flex;
+      align-items: center;
       text-align: center;
-      padding: 64px 24px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin: 20px 0;
     }
-
-    .empty-state h3 {
-      font-size: 1.1rem;
-      margin-bottom: 8px;
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border-color);
     }
-
-    .empty-state p {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      max-width: 340px;
-      margin: 0 auto 20px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .stat-card {
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 22px;
-    }
-
-    .stat-number {
-      font-size: 1.7rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .stat-label {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-
-    .profile-input {
+    .divider::before { margin-right: 10px; }
+    .divider::after { margin-left: 10px; }
+    .form-group { text-align: left; margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-secondary); }
+    .form-input {
       width: 100%;
       background-color: var(--bg-main);
       border: 1px solid var(--border-color);
       color: var(--text-primary);
       padding: 10px 14px;
       border-radius: 6px;
-      margin: 8px 0;
       font-size: 0.95rem;
     }
 
-    .badge-count {
-      background-color: var(--bg-main);
+    /* TABELLE & CATALOGO */
+    .table-container {
+      background-color: var(--bg-surface);
       border: 1px solid var(--border-color);
-      padding: 2px 10px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-top: 20px;
     }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    thead { background-color: #1b1612; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.82rem; }
+    th, td { padding: 14px 18px; border-bottom: 1px solid var(--border-color); }
+    tbody tr:hover { background-color: var(--bg-surface-hover); }
+
+    .badge-status {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-disponibile { background: rgba(46, 160, 67, 0.2); color: #3fb950; }
+    .badge-prestato { background: rgba(248, 81, 73, 0.2); color: #f85149; }
 
     /* FOOTER */
     footer {
@@ -499,62 +273,11 @@
       padding: 48px 24px 32px;
       margin-top: auto;
     }
-
-    .footer-container {
-      max-width: 1180px;
-      margin: 0 auto;
-    }
-
-    .footer-top {
-      display: flex;
-      gap: 64px;
-      flex-wrap: wrap;
-      padding-bottom: 36px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .footer-col h4 {
-      font-size: 0.88rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text-primary);
-    }
-
-    .footer-col p {
-      font-size: 0.88rem;
-      color: var(--text-secondary);
-    }
-
-    .footer-bottom {
-      padding-top: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-
-    .footer-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .footer-divider {
-      color: var(--border-color);
-      margin: 0 4px;
-    }
-
-    @media (max-width: 820px) {
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-      .hero-banner {
-        height: 280px;
-      }
-    }
+    .footer-container { max-width: 1180px; margin: 0 auto; }
+    .footer-top { display: flex; gap: 64px; flex-wrap: wrap; padding-bottom: 36px; border-bottom: 1px solid var(--border-color); }
+    .footer-col h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; }
+    .footer-col p { font-size: 0.88rem; color: var(--text-secondary); }
+    .footer-bottom { padding-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: var(--text-secondary); }
   </style>
 </head>
 <body>
@@ -568,107 +291,45 @@
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
           </svg>
         </div>
-        <span>Biblioteca di Caltabellotta</span>
+        <span id="brandTitleText">Biblioteca di Caltabellotta</span>
       </div>
 
-      <nav class="nav-links">
-        <button id="nav-home" onclick="switchView('home')">La biblioteca</button>
-        <button id="nav-evidenza" onclick="switchView('home', 'evidenza')">In evidenza</button>
-        <button id="nav-preferiti" onclick="switchView('preferiti')">
-          <span>♡</span> Preferiti
-        </button>
-        <button id="nav-profilo" onclick="switchView('profilo')">
-          <span>👤</span> Profilo
-        </button>
-        <button id="nav-lettori" onclick="switchView('lettori')">Lettori</button>
-        <button class="btn-primary" onclick="switchView('catalogo')">
-          Catalogo →
-        </button>
+      <nav class="nav-links" id="navLinksContainer">
+        <!-- Generato via JS in base al login -->
       </nav>
     </div>
   </header>
 
-  <!-- CONTENUTO PRINCIPALE -->
   <main>
-
-    <!-- 1. SEZIONE HOME (LA BIBLIOTECA) -->
+    <!-- HOME -->
     <section id="view-home" class="view-section active">
+      <div class="hero-top-label" id="homeTopLabel">BIBLIOTECA COMUNALE · CALTABELLOTTA</div>
+      <h1 class="hero-title" id="homeMainTitle">I libri di Caltabellotta, a portata di <span>ricerca</span></h1>
+      <p class="hero-desc" id="homeMainDesc">Il catalogo della biblioteca del paese, consultabile da chiunque. Cerca per titolo o per autore e scopri cosa puoi prendere in prestito.</p>
+      
       <button class="btn-primary" onclick="switchView('catalogo')">Sfoglia il catalogo →</button>
 
       <div class="hero-banner">
-        <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80" alt="Scaffali della Biblioteca di Caltabellotta">
+        <img id="heroImageTag" src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80" alt="Scaffali Biblioteca">
       </div>
 
-      <div class="features-grid">
-        <div>
-          <h2>Una biblioteca che vive anche online</h2>
+      <div style="margin: 40px 0;">
+        <h2 style="font-size: 1.8rem; margin-bottom: 20px;">Libri in evidenza</h2>
+        <div id="homeEvidenzaContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+          <!-- Dinamico -->
         </div>
-        <div class="feature-item">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-          </svg>
-          <h3>Cerca per titolo o autore</h3>
-          <p>Scrivi poche lettere nella barra di ricerca e trovi subito il libro che cerchi.</p>
-        </div>
-        <div class="feature-item">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-          <h3>Tutto il catalogo, online</h3>
-          <p>Sfoglia i libri della biblioteca comunale di Caltabellotta da casa, quando vuoi.</p>
-        </div>
-        <div class="feature-item">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>
-          </svg>
-          <h3>Sempre aggiornato</h3>
-          <p>Quando la biblioteca aggiunge un libro, il catalogo si aggiorna da solo.</p>
-        </div>
-      </div>
-
-      <div id="sezione-evidenza" class="home-row">
-        <div>
-          <h2>Libri in evidenza</h2>
-          <p>Nessun libro in evidenza per ora: torna a trovarci presto.</p>
-        </div>
-        <button class="btn-secondary" onclick="switchView('catalogo')">Vedi tutto il catalogo</button>
-      </div>
-
-      <div class="home-row" style="border-bottom: none;">
-        <div>
-          <h2>Cosa vuoi leggere oggi?</h2>
-        </div>
-        <button class="btn-primary" onclick="switchView('catalogo')">Sfoglia il catalogo →</button>
       </div>
     </section>
 
-    <!-- 2. SEZIONE CATALOGO -->
+    <!-- CATALOGO -->
     <section id="view-catalogo" class="view-section">
-      <div class="page-header">
+      <div class="page-header" style="margin-bottom: 24px;">
         <h1>Catalogo</h1>
-        <p>Cerca per titolo o per autore.</p>
+        <p style="color: var(--text-secondary);">Cerca per titolo, autore o casa editrice.</p>
       </div>
 
-      <div class="search-bar-wrapper">
-        <div class="search-input-box">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-          </svg>
-          <input type="text" id="searchInput" placeholder="Cerca nel catalogo" oninput="handleSearch()">
-        </div>
-
-        <div class="search-filters">
-          <span>Cerca in:</span>
-          <label class="checkbox-label">
-            <input type="checkbox" id="chkTitolo" checked onchange="handleSearch()"> Titolo
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" id="chkAutore" checked onchange="handleSearch()"> Autore
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" id="chkCasa" checked onchange="handleSearch()"> Casa editrice
-          </label>
-        </div>
+      <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
+        <input type="text" id="searchInput" class="form-input" style="max-width: 320px;" placeholder="Cerca nel catalogo..." oninput="handleSearch()">
       </div>
 
       <div class="table-container">
@@ -678,436 +339,489 @@
               <th>Titolo</th>
               <th>Autore</th>
               <th>Casa editrice</th>
-              <th style="width: 60px; text-align: center;">Salva</th>
+              <th>Stato Prestito</th>
+              <th style="text-align: center;">Preferito</th>
             </tr>
           </thead>
           <tbody id="catalogTableBody">
-            <tr>
-              <td colspan="4" style="text-align: center; padding: 32px; color: var(--text-secondary);">
-                Caricamento catalogo dal registro libri...
-              </td>
-            </tr>
+            <tr><td colspan="5" style="text-align:center; padding: 24px;">Caricamento catalogo...</td></tr>
           </tbody>
         </table>
       </div>
-
-      <div class="pagination" id="paginationControls"></div>
     </section>
 
-    <!-- 3. SEZIONE PREFERITI -->
+    <!-- ACCEDI / REGISTRATI -->
+    <section id="view-accedi" class="view-section">
+      <div class="auth-card">
+        <h2>Bentornato/a</h2>
+        <p>Accedi al tuo account o registrati</p>
+        
+        <button class="google-btn" onclick="simulateGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.14C3.15 21.32 7.22 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.62H1.18C.43 8.12 0 9.81 0 12s.43 3.88 1.18 5.38l4.09-3.14z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.22 0 3.15 2.68 1.18 6.62l4.09 3.14c.95-2.85 3.6-4.91 6.73-4.91z"/></svg>
+          Continua con Google
+        </button>
+
+        <div class="divider">Oppure continua con l'email</div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="tu@esempio.it">
+        </div>
+        <div class="form-group">
+          <label>Nickname</label>
+          <input type="text" id="loginNickname" class="form-input" placeholder="Il tuo nickname unico">
+        </div>
+        <div class="form-group">
+          <label>Cellulare (opzionale)</label>
+          <input type="text" id="loginPhone" class="form-input" placeholder="3331234567">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••">
+        </div>
+
+        <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="handleLoginRegister()">Accedi / Registrati</button>
+      </div>
+    </section>
+
+    <!-- PREFERITI -->
     <section id="view-preferiti" class="view-section">
       <div class="page-header">
         <h1>I miei preferiti</h1>
-        <p>I libri che hai salvato.</p>
+        <p style="color: var(--text-secondary);">I libri che hai salvato. Riceverai un avviso se tornano disponibili.</p>
       </div>
-
-      <div id="favoritesContainer"></div>
-    </section>
-
-    <!-- 4. SEZIONE PROFILO -->
-    <section id="view-profilo" class="view-section">
-      <div class="page-header">
-        <h1>Il mio profilo</h1>
-        <p>I tuoi dati e il nickname con cui gli altri lettori ti vedono.</p>
-      </div>
-
-      <div class="card-box">
-        <h3 style="font-family: 'Inter', sans-serif; margin-bottom: 4px;">Biblioteca Caltabellotta</h3>
-        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">bibliotecacaltabellotta@gmail.com</p>
-
-        <label style="font-size: 0.88rem; font-weight: 500;">Nickname</label>
-        <input type="text" id="nicknameInput" class="profile-input" value="BibliotecaCaltabellotta">
-        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 16px;">
-          Accanto al nickname gli altri vedono quanti libri hai restituito.
-        </p>
-        <button class="btn-primary" onclick="saveNickname()">Salva nickname</button>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-number" id="statFavCount">0</div>
-          <div class="stat-label">Libri nei preferiti</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">0</div>
-          <div class="stat-label">Libri presi in prestito</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">0</div>
-          <div class="stat-label">Attualmente in prestito</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">0</div>
-          <div class="stat-label">Restituiti</div>
-        </div>
-      </div>
-
-      <div class="card-box">
-        <h3 style="margin-bottom: 6px;">I libri che hai preso</h3>
-        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 16px;">
-          Questo elenco lo vedi solo tu e la bibliotecaria.
-        </p>
-        <p style="font-size: 0.9rem; color: var(--text-secondary);">Non hai ancora preso nessun libro in prestito.</p>
-      </div>
-    </section>
-
-    <!-- 5. SEZIONE LETTORI -->
-    <section id="view-lettori" class="view-section">
-      <div class="page-header">
-        <h1>I lettori</h1>
-        <p>I nickname dei lettori della biblioteca, con i libri che hanno restituito.</p>
-      </div>
-
-      <div class="table-container" style="max-width: 600px;">
+      <div class="table-container">
         <table>
           <thead>
-            <tr>
-              <th>Nickname</th>
-              <th style="text-align: right;">Libri restituiti</th>
-            </tr>
+            <tr><th>Titolo</th><th>Autore</th><th>Casa editrice</th><th style="text-align: center;">Rimuovi</th></tr>
           </thead>
-          <tbody>
-            <tr>
-              <td class="book-title" id="readerNicknameDisplay">BibliotecaCaltabellotta</td>
-              <td style="text-align: right;"><span class="badge-count">0</span></td>
-            </tr>
-            <tr>
-              <td class="book-title">callme._.dree</td>
-              <td style="text-align: right;"><span class="badge-count">0</span></td>
-            </tr>
+          <tbody id="favoritesTableBody">
+            <tr><td colspan="4" style="text-align:center; padding: 24px;">Nessun preferito salvato.</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
-  </main>
-
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-container">
-      <div class="footer-top">
-        <div class="footer-col">
-          <h4>Indirizzo</h4>
-          <p>Via Cossentino, 2<br>92010 Caltabellotta (AG)</p>
+    <!-- PROFILO -->
+    <section id="view-profilo" class="view-section">
+      <div class="page-header">
+        <h1>Profilo</h1>
+        <p style="color: var(--text-secondary);">I tuoi dati personali e statistiche di prestito.</p>
+      </div>
+      <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
+        <h3 id="profEmail" style="margin-bottom: 6px;">email@example.com</h3>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">Nickname: <strong id="profNickname" style="color:var(--text-primary)"></strong></p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+          <div style="background: var(--bg-main); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div id="profBooksReturned" style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">0</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Libri restituiti</div>
+          </div>
+          <div style="background: var(--bg-main); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div id="profActiveLoans" style="font-size: 1.5rem; font-weight: 700;">0</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Prestiti attivi</div>
+          </div>
         </div>
-        <div class="footer-col">
-          <h4>Email</h4>
-          <p>bibliotecacaltabellotta@gmail.com</p>
+        <button class="btn-secondary" onclick="logoutUser()">Disconnettiti</button>
+      </div>
+    </section>
+
+    <!-- LETTORI -->
+    <section id="view-lettori" class="view-section">
+      <div class="page-header">
+        <h1>I lettori</h1>
+        <p style="color: var(--text-secondary);">Cerca un nickname e scopri i libri restituiti.</p>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <input type="text" id="searchReaderInput" class="form-input" style="max-width: 300px;" placeholder="Cerca nickname..." oninput="renderReaders()">
+      </div>
+
+      <div class="table-container" style="max-width: 800px;">
+        <table>
+          <thead>
+            <tr><th>Nickname</th><th>Email</th><th>Cellulare</th><th style="text-align: right;">Libri restituiti</th></tr>
+          </thead>
+          <tbody id="readersTableBody">
+            <!-- Dinamico -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GESTIONE (ADMIN) -->
+    <section id="view-gestione" class="view-section">
+      <div class="page-header">
+        <h1>Gestione Amministrativa</h1>
+        <p style="color: var(--text-secondary);">Pannello riservato alla bibliotecaria.</p>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
+        <button class="btn-secondary active-tab" onclick="switchAdminTab('prestiti')" id="admTabPrestiti">Prestiti</button>
+        <button class="btn-secondary" onclick="switchAdminTab('lettori')" id="admTabLettori">Aggiungi Lettore</button>
+        <button class="btn-secondary" onclick="switchAdminTab('evidenza')" id="admTabEvidenza">In Evidenza</button>
+        <button class="btn-secondary" onclick="switchAdminTab('sito')" id="admTabSito">Personalizza Sito</button>
+      </div>
+
+      <!-- TAB PRESTITI -->
+      <div id="adminPrestiti" class="admin-panel">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>Titolo Libro</th><th>Stato</th><th>Assegnato a (Email)</th><th>Rientro previsto</th><th>Azioni</th></tr>
+            </thead>
+            <tbody id="adminPrestitiBody"></tbody>
+          </table>
         </div>
       </div>
 
-      <div class="footer-bottom">
-        <div class="footer-brand">
-          <div class="brand-icon" style="width: 28px; height: 28px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
-            </svg>
-          </div>
-          <strong style="color: var(--text-primary);">Biblioteca di Caltabellotta</strong>
-          <span class="footer-divider">|</span>
-          <span>Biblioteca comunale</span>
+      <!-- TAB AGGIUNGI LETTORE -->
+      <div id="adminLettori" class="admin-panel" style="display:none;">
+        <div class="auth-card" style="margin: 0; text-align: left; max-width: 500px;">
+          <h3>Invita / Aggiungi nuovo lettore</h3>
+          <p>Inserisci la mail per registrare l'utente.</p>
+          <div class="form-group"><label>Email</label><input type="email" id="newReaderEmail" class="form-input"></div>
+          <div class="form-group"><label>Nickname</label><input type="text" id="newReaderNick" class="form-input"></div>
+          <button class="btn-primary" onclick="adminAddNewReader()">Aggiungi lettore</button>
         </div>
+      </div>
+
+      <!-- TAB EVIDENZA -->
+      <div id="adminEvidenza" class="admin-panel" style="display:none;">
+        <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
+          <h3>Gestisci Libri in Evidenza</h3>
+          <p>Seleziona quali libri mostrare in home page.</p>
+          <div id="adminEvidenzaChecklist" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;"></div>
+          <button class="btn-primary" onclick="saveEvidenzaSelection()">Salva evidenza</button>
+        </div>
+      </div>
+
+      <!-- TAB SITO (PERSONALIZZAZIONE) -->
+      <div id="adminSito" class="admin-panel" style="display:none;">
+        <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
+          <h3>Personalizzazione Grafica e Testi</h3>
+          <div class="form-group"><label>Colore principale (Accento)</label><input type="color" id="cfgAccent" class="form-input" value="#a83226"></div>
+          <div class="form-group"><label>Testo Titolo Hero</label><input type="text" id="cfgTitle" class="form-input" value="I libri di Caltabellotta, a portata di ricerca"></div>
+          <div class="form-group"><label>URL Immagine Copertina</label><input type="text" id="cfgHeroImg" class="form-input" value="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80"></div>
+          <div class="form-group"><label>Indirizzo Footer</label><input type="text" id="cfgAddress" class="form-input" value="Via Cossentino, 2 - 92010 Caltabellotta (AG)"></div>
+          <div class="form-group"><label>Telefono Footer</label><input type="text" id="cfgPhone" class="form-input" value="+39 0925 000000"></div>
+          <button class="btn-primary" onclick="saveSiteConfig()">Salva modifiche sito</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-top">
+        <div class="footer-col"><h4>Indirizzo</h4><p id="footerAddressText">Via Cossentino, 2<br>92010 Caltabellotta (AG)</p></div>
+        <div class="footer-col"><h4>Contatti</h4><p>Email: bibliotecacaltabellotta@gmail.com<br>Tel: <span id="footerPhoneText">+39 0925 000000</span></p></div>
+      </div>
+      <div class="footer-bottom">
+        <div><strong>Biblioteca di Caltabellotta</strong> | Biblioteca comunale</div>
         <div>© 2026 Biblioteca di Caltabellotta</div>
       </div>
     </div>
   </footer>
 
-  <!-- LOGICA JAVASCRIPT -->
   <script>
-    // INCOLLA QUI IL LINK CSV PUBBLICATO DA GOOGLE FOGLI (Foglio specchio)
+    // INCOLLA QUI IL LINK CSV DEL TUO FOGLIO SPECCHIO
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
-    // Dati di esempio mostrati finché non incolli il tuo link CSV
     const FALLBACK_BOOKS = [
-      { titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori" },
-      { titolo: "25 agosto 1983 ed altri racconti inediti", autore: "Borges Jorge Luis", casa: "Ricci Franco Maria Ed" },
-      { titolo: "A-Z - La poesia di Giovanni Cultrera (Giudizi e Consensi)", autore: "Cultrera Giovanni", casa: "Tipografia N. Di Benedetto" },
-      { titolo: "Addio a Berlino", autore: "Isherwood", casa: "Garzanti" },
-      { titolo: "Addio Mr.Shaft: una nuova avventura di Shaft, il detective negro", autore: "Tidyman Ernest", casa: "Garzanti Editore" },
-      { titolo: "Agnon Sachs, I scrittori del mondo, Premio Nobel 1966", autore: "Agnon Sachs", casa: "U.T.E.T." },
-      { titolo: "Ali della notte", autore: "Silverberg Robert", casa: "Editrice Nord" },
-      { titolo: "Collana Fenice: I preromantici inglesi", autore: "—", casa: "Guanda" },
-      { titolo: "Colombo", autore: "Altan", casa: "Arnoldo Mondadori ed" },
-      { titolo: "Come mare", autore: "Smith Wilbur", casa: "Club degli Editori" },
-      { titolo: "Communion", autore: "Strieber Whitley", casa: "Arnoldo Mondadori Ed" }
+      { titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori", stato: "Disponibile", assegnato: "", rientro: "" },
+      { titolo: "25 agosto 1983 ed altri racconti inediti", autore: "Borges Jorge Luis", casa: "Ricci Franco Maria Ed", stato: "Disponibile", assegnato: "", rientro: "" },
+      { titolo: "Addio a Berlino", autore: "Isherwood", casa: "Garzanti", stato: "Disponibile", assegnato: "", rientro: "" },
+      { titolo: "Ali della notte", autore: "Silverberg Robert", casa: "Editrice Nord", stato: "Disponibile", assegnato: "", rientro: "" }
     ];
 
-    let allBooks = [];
-    let filteredBooks = [];
-    let currentPage = 1;
-    const rowsPerPage = 15;
+    let allBooks = JSON.parse(localStorage.getItem('biblio_books')) || FALLBACK_BOOKS;
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
+    let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
+    let readers = JSON.parse(localStorage.getItem('biblio_readers')) || [
+      { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", restituiti: 0 },
+      { nickname: "MarioRossi", email: "mario@example.com", cellulare: "3331111111", restituiti: 2 }
+    ];
+    let evidenzaList = JSON.parse(localStorage.getItem('biblio_evidenza')) || [];
+    let siteConfig = JSON.parse(localStorage.getItem('biblio_config')) || { accent: "#a83226", title: "I libri di Caltabellotta, a portata di ricerca", heroImg: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80", address: "Via Cossentino, 2 - 92010 Caltabellotta (AG)", phone: "+39 0925 000000" };
 
-    // Navigazione tra le pagine
-    function switchView(viewName, anchorId = null) {
-      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-      document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active-tab'));
-
-      const target = document.getElementById('view-' + viewName);
-      if (target) target.classList.add('active');
-
-      const navBtn = document.getElementById('nav-' + viewName);
-      if (navBtn) navBtn.classList.add('active-tab');
-
-      if (viewName === 'preferiti') renderFavorites();
-      if (viewName === 'profilo') updateProfileStats();
-
-      if (anchorId === 'evidenza') {
-        document.getElementById('sezione-evidenza').scrollIntoView({ behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+    function initSiteConfig() {
+      document.documentElement.style.setProperty('--accent', siteConfig.accent);
+      document.documentElement.style.setProperty('--accent-hover', siteConfig.accent);
+      document.getElementById('homeMainTitle').innerHTML = siteConfig.title.replace('ricerca', '<span>ricerca</span>');
+      document.getElementById('heroImageTag').src = siteConfig.heroImg;
+      document.getElementById('footerAddressText').innerHTML = siteConfig.address.replace(' - ', '<br>');
+      document.getElementById('footerPhoneText').innerText = siteConfig.phone;
     }
 
-    // Parser CSV semplice e robusto
-    function parseCSV(text) {
-      const rows = [];
-      let currentRow = [];
-      let currentVal = '';
-      let inQuotes = false;
+    function switchView(viewName) {
+      document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('view-' + viewName).classList.add('active');
+      renderNavbar();
+      if(viewName === 'catalogo') renderCatalog();
+      if(viewName === 'preferiti') renderFavorites();
+      if(viewName === 'profilo') renderProfile();
+      if(viewName === 'lettori') renderReaders();
+      if(viewName === 'gestione') renderAdminPrestiti();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const nextChar = text[i + 1];
+    function renderNavbar() {
+      const nav = document.getElementById('navLinksContainer');
+      let html = `
+        <button onclick="switchView('home')">Home</button>
+        <button onclick="switchView('catalogo')">Catalogo</button>
+        <button onclick="switchView('lettori')">Lettori</button>
+      `;
 
-        if (char === '"' && inQuotes && nextChar === '"') {
-          currentVal += '"';
-          i++;
-        } else if (char === '"') {
-          inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-          currentRow.push(currentVal.trim());
-          currentVal = '';
-        } else if ((char === '\n' || char === '\r') && !inQuotes) {
-          if (currentVal !== '' || currentRow.length > 0) {
-            currentRow.push(currentVal.trim());
-            rows.push(currentRow);
-            currentRow = [];
-            currentVal = '';
-          }
-        } else {
-          currentVal += char;
+      if (!currentUser) {
+        html += `<button class="btn-primary" onclick="switchView('accedi')">Accedi</button>`;
+      } else {
+        html += `
+          <button onclick="switchView('preferiti')">Preferiti</button>
+          <button onclick="switchView('profilo')">Profilo</button>
+        `;
+        if (currentUser.email === 'bibliotecacaltabellotta@gmail.com') {
+          html += `<button class="btn-primary" onclick="switchView('gestione')">Gestione</button>`;
         }
+        html += `<button onclick="logoutUser()">Esci</button>`;
       }
-      if (currentVal !== '' || currentRow.length > 0) {
-        currentRow.push(currentVal.trim());
-        rows.push(currentRow);
+      nav.innerHTML = html;
+    }
+
+    // CSV PARSER
+    function parseCSV(text) {
+      const rows = []; let row = []; let val = ''; let q = false;
+      for (let i = 0; i < text.length; i++) {
+        let c = text[i], n = text[i+1];
+        if (c === '"' && q && n === '"') { val += '"'; i++; }
+        else if (c === '"') { q = !q; }
+        else if (c === ',' && !q) { row.push(val.trim()); val = ''; }
+        else if ((c === '\n' || c === '\r') && !q) {
+          if (val || row.length) { row.push(val.trim()); rows.push(row); row = []; val = ''; }
+        } else { val += c; }
       }
+      if (val || row.length) { row.push(val.trim()); rows.push(row); }
       return rows;
     }
 
-    // Caricamento dati da Google Sheets
     async function loadBooks() {
-      if (!GOOGLE_SHEET_CSV_URL || GOOGLE_SHEET_CSV_URL === "INCOLLA_QUI_IL_TUO_LINK_CSV") {
-        allBooks = FALLBACK_BOOKS;
-        filteredBooks = [...allBooks];
-        renderTable();
-        return;
+      if (GOOGLE_SHEET_CSV_URL && GOOGLE_SHEET_CSV_URL !== "INCOLLA_QUI_IL_TUO_LINK_CSV") {
+        try {
+          const res = await fetch(GOOGLE_SHEET_CSV_URL);
+          const txt = await res.text();
+          const rows = parseCSV(txt);
+          allBooks = rows.slice(1).filter(r => r[0]).map(r => {
+            let existing = allBooks.find(b => b.titolo === r[0]);
+            return existing || { titolo: r[0], autore: r[1] || '—', casa: r[3] || '—', stato: 'Disponibile', assegnato: '', rientro: '' };
+          });
+        } catch(e) {}
       }
-
-      try {
-        const response = await fetch(GOOGLE_SHEET_CSV_URL);
-        const csvText = await response.text();
-        const rows = parseCSV(csvText);
-
-        // Salta la riga 1 (intestazioni) e mappa Colonna A (Titolo), B (Autore), D (Casa editrice)
-        allBooks = rows.slice(1)
-          .filter(r => r[0] && r[0].trim() !== "")
-          .map(r => ({
-            titolo: r[0] || "—",
-            autore: r[1] || "—",
-            numero: r[2] || "—",
-            casa: r[3] || "—"
-          }));
-
-        filteredBooks = [...allBooks];
-        renderTable();
-      } catch (err) {
-        console.error("Errore caricamento CSV:", err);
-        allBooks = FALLBACK_BOOKS;
-        filteredBooks = [...allBooks];
-        renderTable();
-      }
+      renderCatalog();
+      renderHomeEvidenza();
     }
 
-    // Ricerca istantanea
-    function handleSearch() {
-      const query = document.getElementById('searchInput').value.toLowerCase().trim();
-      const searchTitolo = document.getElementById('chkTitolo').checked;
-      const searchAutore = document.getElementById('chkAutore').checked;
-      const searchCasa = document.getElementById('chkCasa').checked;
-
-      if (!query) {
-        filteredBooks = [...allBooks];
-      } else {
-        filteredBooks = allBooks.filter(book => {
-          const matchT = searchTitolo && book.titolo.toLowerCase().includes(query);
-          const matchA = searchAutore && book.autore.toLowerCase().includes(query);
-          const matchC = searchCasa && book.casa.toLowerCase().includes(query);
-          return matchT || matchA || matchC;
-        });
-      }
-
-      currentPage = 1;
-      renderTable();
-    }
-
-    // Rendering tabella catalogo
-    function renderTable() {
+    function renderCatalog() {
+      const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
       const tbody = document.getElementById('catalogTableBody');
-      tbody.innerHTML = '';
+      const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(query) || b.autore.toLowerCase().includes(query) || b.casa.toLowerCase().includes(query));
+      
+      if(!filtered.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px;">Nessun libro trovato.</td></tr>`; return; }
 
-      if (filteredBooks.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:32px; color:var(--text-secondary);">Nessun libro trovato per questa ricerca.</td></tr>`;
-        document.getElementById('paginationControls').innerHTML = '';
-        return;
-      }
-
-      const start = (currentPage - 1) * rowsPerPage;
-      const end = start + rowsPerPage;
-      const pageItems = filteredBooks.slice(start, end);
-
-      pageItems.forEach(book => {
-        const isSaved = favorites.some(f => f.titolo === book.titolo && f.autore === book.autore);
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="book-title">${escapeHtml(book.titolo)}</td>
-          <td class="book-meta">${escapeHtml(book.autore)}</td>
-          <td class="book-meta">${escapeHtml(book.casa)}</td>
-          <td style="text-align: center;">
-            <button class="fav-btn ${isSaved ? 'saved' : ''}" title="Aggiungi ai preferiti" onclick='toggleFavorite(${JSON.stringify(book).replace(/'/g, "&#39;")})'>
-              ${isSaved ? '♥' : '♡'}
-            </button>
-          </td>
+      tbody.innerHTML = filtered.map(b => {
+        const isFav = favorites.some(f => f.titolo === b.titolo);
+        const badge = b.stato === 'Disponibile' ? `<span class="badge-status badge-disponibile">Disponibile</span>` : `<span class="badge-status badge-prestato">In Prestito</span>`;
+        return `
+          <tr>
+            <td style="font-weight:600;">${b.titolo}</td>
+            <td>${b.autore}</td>
+            <td>${b.casa}</td>
+            <td>${badge}</td>
+            <td style="text-align:center;"><button style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:${isFav?'var(--accent)':'var(--text-muted)'}" onclick="toggleFavorite('${b.titolo}')">${isFav?'♥':'♡'}</button></td>
+          </tr>
         `;
-        tbody.appendChild(tr);
-      });
-
-      renderPagination();
+      }).join('');
     }
 
-    // Impaginazione
-    function renderPagination() {
-      const totalPages = Math.ceil(filteredBooks.length / rowsPerPage);
-      const container = document.getElementById('paginationControls');
-      container.innerHTML = '';
-
-      if (totalPages <= 1) return;
-
-      const prevBtn = document.createElement('button');
-      prevBtn.className = 'page-btn';
-      prevBtn.innerText = '< Previous';
-      prevBtn.disabled = currentPage === 1;
-      prevBtn.onclick = () => { currentPage--; renderTable(); };
-      container.appendChild(prevBtn);
-
-      for (let i = 1; i <= totalPages; i++) {
-        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-          const btn = document.createElement('button');
-          btn.className = 'page-btn ' + (i === currentPage ? 'active' : '');
-          btn.innerText = i;
-          btn.onclick = () => { currentPage = i; renderTable(); };
-          container.appendChild(btn);
-        } else if (i === currentPage - 2 || i === currentPage + 2) {
-          const dots = document.createElement('span');
-          dots.style.color = 'var(--text-muted)';
-          dots.innerText = '...';
-          container.appendChild(dots);
-        }
-      }
-
-      const nextBtn = document.createElement('button');
-      nextBtn.className = 'page-btn';
-      nextBtn.innerText = 'Next >';
-      nextBtn.disabled = currentPage === totalPages;
-      nextBtn.onclick = () => { currentPage++; renderTable(); };
-      container.appendChild(nextBtn);
-    }
-
-    // Gestione Preferiti
-    function toggleFavorite(book) {
-      const idx = favorites.findIndex(f => f.titolo === book.titolo && f.autore === book.autore);
-      if (idx > -1) {
-        favorites.splice(idx, 1);
-      } else {
-        favorites.push(book);
-      }
+    function toggleFavorite(titolo) {
+      if(!currentUser) { alert('Effettua l\'accesso per salvare i preferiti.'); switchView('accedi'); return; }
+      const book = allBooks.find(b => b.titolo === titolo);
+      const idx = favorites.findIndex(f => f.titolo === titolo);
+      if(idx > -1) favorites.splice(idx, 1); else favorites.push(book);
       localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
-      renderTable();
-      updateProfileStats();
+      renderCatalog();
     }
 
-    function renderFavorites() {
-      const container = document.getElementById('favoritesContainer');
-      if (favorites.length === 0) {
-        container.innerHTML = `
-          <div class="card-box empty-state">
-            <h3>Nessun preferito ancora</h3>
-            <p>Nel catalogo tocca il cuore accanto a un libro per salvarlo qui.</p>
-            <button class="btn-primary" onclick="switchView('catalogo')">Vai al catalogo</button>
-          </div>
-        `;
+    function renderHomeEvidenza() {
+      const container = document.getElementById('homeEvidenzaContainer');
+      const evBooks = allBooks.filter(b => evidenzaList.includes(b.titolo));
+      if(!evBooks.length) { container.innerHTML = `<p style="color:var(--text-secondary);">Nessun libro in evidenza per ora.</p>`; return; }
+      container.innerHTML = evBooks.map(b => `
+        <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:20px;">
+          <h4 style="margin-bottom:6px;">${b.titolo}</h4>
+          <p style="color:var(--text-secondary); font-size:0.85rem;">${b.autore} - ${b.casa}</p>
+        </div>
+      `).join('');
+    }
+
+    // LOGIN & REGISTRATION
+    function handleLoginRegister() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const nickname = document.getElementById('loginNickname').value.trim();
+      const cellulare = document.getElementById('loginPhone').value.trim();
+      const pass = document.getElementById('loginPassword').value;
+
+      if(!email || !nickname || !pass) { alert('Compila tutti i campi obbligatori.'); return; }
+      
+      // Controllo unicità nickname
+      if(readers.some(r => r.nickname === nickname && r.email !== email)) {
+        alert('Questo nickname è già occupato da un altro utente. Scegline un altro.');
         return;
       }
 
-      let rowsHtml = favorites.map(book => `
+      currentUser = { email, nickname, cellulare };
+      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+
+      let reader = readers.find(r => r.email === email);
+      if(!reader) {
+        readers.push({ nickname, email, cellulare, restituiti: 0 });
+      } else {
+        reader.nickname = nickname;
+        reader.cellulare = cellulare;
+      }
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+
+      alert('Accesso effettuato con successo!');
+      switchView('home');
+    }
+
+    function simulateGoogleLogin() {
+      currentUser = { email: "utente.google@gmail.com", nickname: "GoogleUser", cellulare: "3339999999" };
+      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+      if(!readers.some(r => r.email === currentUser.email)) readers.push({ nickname: currentUser.nickname, email: currentUser.email, cellulare: currentUser.cellulare, restituiti: 0 });
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      alert('Accesso con Google completato!');
+      switchView('home');
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      localStorage.removeItem('biblio_current_user');
+      switchView('home');
+    }
+
+    function renderProfile() {
+      if(!currentUser) { switchView('accedi'); return; }
+      document.getElementById('profEmail').innerText = currentUser.email;
+      document.getElementById('profNickname').innerText = currentUser.nickname;
+      let r = readers.find(x => x.email === currentUser.email) || { restituiti: 0 };
+      document.getElementById('profBooksReturned').innerText = r.restituiti;
+    }
+
+    function renderReaders() {
+      const query = (document.getElementById('searchReaderInput')?.value || '').toLowerCase();
+      const tbody = document.getElementById('readersTableBody');
+      const filtered = readers.filter(r => r.nickname.toLowerCase().includes(query));
+      
+      tbody.innerHTML = filtered.map(r => `
         <tr>
-          <td class="book-title">${escapeHtml(book.titolo)}</td>
-          <td class="book-meta">${escapeHtml(book.autore)}</td>
-          <td class="book-meta">${escapeHtml(book.casa)}</td>
-          <td style="text-align: center;">
-            <button class="fav-btn saved" onclick='toggleFavorite(${JSON.stringify(book).replace(/'/g, "&#39;")}); renderFavorites();'>♥</button>
+          <td style="font-weight:600;">${r.nickname}</td>
+          <td>${r.email}</td>
+          <td>${r.cellulare || '—'}</td>
+          <td style="text-align:right;"><span style="background:var(--bg-main); padding:2px 10px; border-radius:12px; border:1px solid var(--border-color);">${r.restituiti}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // ADMIN GESTIONE
+    function switchAdminTab(tab) {
+      ['Prestiti','Lettori','Evidenza','Sito'].forEach(t => {
+        document.getElementById('admin'+t).style.display = (t.toLowerCase() === tab) ? 'block' : 'none';
+        document.getElementById('admTab'+t).classList.remove('active-tab');
+      });
+      document.getElementById('admTab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active-tab');
+      if(tab === 'prestiti') renderAdminPrestiti();
+      if(tab === 'evidenza') renderAdminEvidenzaChecklist();
+    }
+
+    function renderAdminPrestiti() {
+      const tbody = document.getElementById('adminPrestitiBody');
+      tbody.innerHTML = allBooks.map((b, idx) => `
+        <tr>
+          <td>${b.titolo}</td>
+          <td><span class="badge-status ${b.stato==='Disponibile'?'badge-disponibile':'badge-prestato'}">${b.stato}</span></td>
+          <td><input type="email" id="assign_email_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.assegnato||''}" placeholder="email utente"></td>
+          <td><input type="date" id="assign_date_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.rientro||''}"></td>
+          <td>
+            ${b.stato==='Disponibile' ? 
+              `<button class="btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="setBookPrestito(${idx}, true)">Metti Prestito</button>` : 
+              `<button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="setBookPrestito(${idx}, false)">Registra Restituzione</button>`}
           </td>
         </tr>
       `).join('');
-
-      container.innerHTML = `
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Titolo</th>
-                <th>Autore</th>
-                <th>Casa editrice</th>
-                <th style="width: 60px; text-align: center;">Rimuovi</th>
-              </tr>
-            </thead>
-            <tbody>${rowsHtml}</tbody>
-          </table>
-        </div>
-      `;
     }
 
-    // Profilo e Nickname
-    function saveNickname() {
-      const val = document.getElementById('nicknameInput').value.trim();
-      if (val) {
-        localStorage.setItem('biblio_nickname', val);
-        document.getElementById('readerNicknameDisplay').innerText = val;
-        alert('Nickname salvato con successo!');
+    function setBookPrestito(idx, isPrestito) {
+      const emailInput = document.getElementById(`assign_email_${idx}`).value.trim();
+      const dateInput = document.getElementById(`assign_date_${idx}`).value;
+      
+      if(isPrestito && !emailInput) { alert('Inserisci la mail dell\'utente a cui assegnare il libro.'); return; }
+
+      allBooks[idx].stato = isPrestito ? 'In Prestito' : 'Disponibile';
+      allBooks[idx].assegnato = isPrestito ? emailInput : '';
+      allBooks[idx].rientro = isPrestito ? dateInput : '';
+
+      if(!isPrestito && emailInput) {
+        let reader = readers.find(r => r.email === emailInput);
+        if(reader) { reader.restituiti = (reader.restituiti || 0) + 1; }
       }
+
+      localStorage.setItem('biblio_books', JSON.stringify(allBooks));
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      renderAdminPrestiti();
+      alert('Stato aggiornato con successo!');
     }
 
-    function updateProfileStats() {
-      document.getElementById('statFavCount').innerText = favorites.length;
+    function adminAddNewReader() {
+      const email = document.getElementById('newReaderEmail').value.trim();
+      const nickname = document.getElementById('newReaderNick').value.trim();
+      if(!email || !nickname) { alert('Inserisci email e nickname.'); return; }
+      if(readers.some(r => r.nickname === nickname)) { alert('Nickname già esistente.'); return; }
+      readers.push({ nickname, email, cellulare: '', restituiti: 0 });
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      alert('Lettore aggiunto con successo!');
     }
 
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+    function renderAdminEvidenzaChecklist() {
+      const container = document.getElementById('adminEvidenzaChecklist');
+      container.innerHTML = allBooks.map(b => `
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.9rem; cursor:pointer;">
+          <input type="checkbox" value="${b.titolo}" ${evidenzaList.includes(b.titolo)?'checked':''} class="ev-chk"> ${b.titolo}
+        </label>
+      `).join('');
     }
 
-    // Inizializzazione
+    function saveEvidenzaSelection() {
+      evidenzaList = Array.from(document.querySelectorAll('.ev-chk:checked')).map(el => el.value);
+      localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
+      alert('Libri in evidenza salvati!');
+      renderHomeEvidenza();
+    }
+
+    function saveSiteConfig() {
+      siteConfig.accent = document.getElementById('cfgAccent').value;
+      siteConfig.title = document.getElementById('cfgTitle').value;
+      siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
+      siteConfig.address = document.getElementById('cfgAddress').value;
+      siteConfig.phone = document.getElementById('cfgPhone').value;
+      localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
+      initSiteConfig();
+      alert('Personalizzazioni salvate!');
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
-      const savedNick = localStorage.getItem('biblio_nickname');
-      if (savedNick) {
-        document.getElementById('nicknameInput').value = savedNick;
-        document.getElementById('readerNicknameDisplay').innerText = savedNick;
-      }
-      updateProfileStats();
+      initSiteConfig();
+      renderNavbar();
       loadBooks();
     });
   </script>
