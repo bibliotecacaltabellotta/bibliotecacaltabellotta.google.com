@@ -612,8 +612,14 @@
       <!-- TAB SITO (PERSONALIZZAZIONE) -->
       <div id="adminSito" class="admin-panel" style="display:none;">
         <div class="auth-card" style="margin: 0; text-align: left; max-width: 700px;">
-          <h3>Personalizzazione Sito</h3>
+          <h3>Personalizzazione Sito & GitHub Sync</h3>
           
+          <div class="form-group" style="background: rgba(168,50,38,0.1); padding: 12px; border-radius: 6px; border: 1px solid var(--accent);">
+            <label style="color: var(--text-primary); font-weight:600;">GitHub Personal Access Token (Token Segreto)</label>
+            <input type="password" id="cfgGithubToken" class="form-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            <small style="color: var(--text-secondary);">Inserisci il token di GitHub per rendere visibili in tempo reale le modifiche a tutti gli utenti.</small>
+          </div>
+
           <h4 style="margin: 16px 0 8px; color: var(--accent);">Facciata principale</h4>
           <div class="form-group"><label>Modifica Titolo</label><input type="text" id="cfgTitle" class="form-input"></div>
           <div class="form-group"><label>Modifica Sottotitolo</label><textarea id="cfgDesc" class="form-input" rows="2"></textarea></div>
@@ -663,27 +669,28 @@
   <script>
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
+    // Configurazione GitHub Repository per la sincronizzazione globale
+    const GH_OWNER = "bibliotecacaltabellotta";
+    const GH_REPO = "bibliotecacaltabellotta.google.com";
+    const GH_FILE_PATH = "db_state.json";
+
     const FALLBACK_BOOKS = [
       { catalogazione: "001", titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori", anno: "1982", cm: "20cm", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
       { catalogazione: "002", titolo: "25 agosto 1983 ed altri racconti inediti", autore: "Borges Jorge Luis", casa: "Ricci Franco Maria Ed", anno: "1990", cm: "22cm", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
       { catalogazione: "003", titolo: "Addio a Berlino", autore: "Isherwood", casa: "Garzanti", anno: "1975", cm: "19cm", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" }
     ];
 
-    let allBooks = JSON.parse(localStorage.getItem('biblio_books')) || FALLBACK_BOOKS;
+    let allBooks = [];
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
     let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
     
-    let readers = JSON.parse(localStorage.getItem('biblio_readers')) || [
+    let readers = [
       { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] },
       { nickname: "MarioRossi", email: "mario@example.com", cellulare: "3331111111", password: "password", adminNotes: "", returnedBooks: [], activeLoans: [] }
     ];
 
-    if(!readers.some(r => r.email === "bibliotecacaltabellotta@gmail.com")) {
-      readers.unshift({ nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] });
-    }
-
-    let evidenzaList = JSON.parse(localStorage.getItem('biblio_evidenza')) || [];
-    let siteConfig = JSON.parse(localStorage.getItem('biblio_config')) || { 
+    let evidenzaList = [];
+    let siteConfig = { 
       accent: "#a83226", 
       title: "I libri di Caltabellotta, a portata di", 
       word: "ricerca",
@@ -696,12 +703,79 @@
       address: "Via Cossentino, 2 - 92010 Caltabellotta (AG)", 
       phone: "+39 0925 000000",
       hours: "Lun - Ven: 9:00 - 13:00",
-      email: "bibliotecacaltabellotta@gmail.com"
+      email: "bibliotecacaltabellotta@gmail.com",
+      githubToken: localStorage.getItem('biblio_gh_token') || ""
     };
 
     function isAdmin() {
       if(!currentUser) return false;
       return currentUser.email === "bibliotecacaltabellotta@gmail.com" || currentUser.cellulare === "3330000000" || currentUser.nickname.toLowerCase() === "bibliotecacaltabellotta";
+    }
+
+    // Sincronizzazione Globale con GitHub
+    async function fetchGlobalState() {
+      try {
+        const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}`);
+        if(res.ok) {
+          const data = await res.json();
+          const decoded = JSON.parse(atob(data.content));
+          if(decoded.books) allBooks = decoded.books;
+          if(decoded.evidenza) evidenzaList = decoded.evidenza;
+          if(decoded.config) siteConfig = { ...siteConfig, ...decoded.config };
+          if(decoded.readers) readers = decoded.readers;
+        }
+      } catch(e) {
+        console.log("Stato remoto non trovato, uso default.");
+      }
+    }
+
+    async function saveGlobalState() {
+      const token = siteConfig.githubToken || localStorage.getItem('biblio_gh_token');
+      if(!token) {
+        alert("Attenzione: Inserisci il Token GitHub in 'Personalizza Sito' per salvare le modifiche in tempo reale per tutti gli utenti.");
+        return;
+      }
+      
+      const payload = {
+        books: allBooks,
+        evidenza: evidenzaList,
+        config: siteConfig,
+        readers: readers
+      };
+
+      const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+
+      try {
+        // Ottieni lo SHA corrente del file se esiste
+        let sha = "";
+        const getRes = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}`, {
+          headers: { "Authorization": `token ${token}` }
+        });
+        if(getRes.ok) {
+          const fileData = await getRes.json();
+          sha = fileData.sha;
+        }
+
+        // Salva il file aggiornato su GitHub
+        const putRes = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: "Aggiornamento dati biblioteca via pannello admin",
+            content: contentEncoded,
+            sha: sha ? sha : undefined
+          })
+        });
+
+        if(!putRes.ok) {
+          alert("Errore nel salvataggio remoto su GitHub. Verifica che il Token sia valido.");
+        }
+      } catch(e) {
+        console.error("Errore di rete durante il salvataggio:", e);
+      }
     }
 
     function initSiteConfig() {
@@ -805,7 +879,9 @@
     }
 
     async function loadBooks() {
-      if (GOOGLE_SHEET_CSV_URL) {
+      await fetchGlobalState();
+
+      if (GOOGLE_SHEET_CSV_URL && allBooks.length === 0) {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
           const txt = await res.text();
@@ -824,17 +900,19 @@
             notePrestito: ''
           }));
           if(csvBooks.length > 0) {
-            allBooks = csvBooks.map(cb => {
-              let existing = allBooks.find(b => b.titolo.toLowerCase() === cb.titolo.toLowerCase());
-              return existing ? { ...cb, stato: existing.stato, assegnato: existing.assegnato, dataPrestito: existing.dataPrestito, rientro: existing.rientro, notePrestito: existing.notePrestito } : cb;
-            });
+            allBooks = csvBooks;
           }
         } catch(e) {}
       }
+
+      if(allBooks.length === 0) {
+        allBooks = FALLBACK_BOOKS;
+      }
+
       allBooks.sort((a, b) => a.titolo.localeCompare(b.titolo));
-      localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       renderCatalog();
       renderHomeEvidenza();
+      initSiteConfig();
     }
 
     function renderCatalog() {
@@ -978,7 +1056,7 @@
 
       const newReader = { nickname, email, cellulare: phone, password: pass, adminNotes: "", returnedBooks: [], activeLoans: [] };
       readers.push(newReader);
-      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      saveGlobalState();
 
       currentUser = { email, nickname, cellulare: phone, password: pass };
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
@@ -1019,7 +1097,7 @@
       }
       const newReader = { nickname, email, cellulare: "3330000000", password: "googlepassword", adminNotes: "", returnedBooks: [], activeLoans: [] };
       readers.push(newReader);
-      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      saveGlobalState();
 
       currentUser = { email, nickname, cellulare: "3330000000", password: "googlepassword" };
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
@@ -1036,7 +1114,7 @@
     function deleteAccount() {
       if(confirm("Sei sicuro di voler eliminare definitivamente il tuo account e tutti i tuoi dati?")) {
         readers = readers.filter(r => r.email !== currentUser.email);
-        localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        saveGlobalState();
         logoutUser();
       }
     }
@@ -1076,7 +1154,7 @@
         reader.cellulare = phone;
         reader.nickname = nick;
         reader.password = pass;
-        localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        saveGlobalState();
       }
 
       currentUser.cellulare = phone;
@@ -1139,7 +1217,7 @@
       let r = readers.find(x => x.email === viewingReaderEmail);
       if(r) {
         r.adminNotes = notes;
-        localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        saveGlobalState();
         alert('Note salvate con successo!');
       }
     }
@@ -1216,13 +1294,12 @@
       }
 
       libro.stato = nuovoStato;
-      localStorage.setItem('biblio_books', JSON.stringify(allBooks));
-      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      saveGlobalState();
       renderAdminPrestiti();
       renderCatalog();
       renderHomeEvidenza();
       if(document.getElementById('view-preferiti').classList.contains('active')) renderFavorites();
-      alert('Stato prestito aggiornato!');
+      alert('Stato prestito aggiornato e sincronizzato!');
     }
 
     function sendInviteEmail() {
@@ -1239,10 +1316,7 @@ Grazie e buona lettura!
 La tua Biblioteca preferita.`;
 
       const body = encodeURIComponent(bodyText);
-      
-      // Apertura diretta del client email (Outlook/Mail) con mittente predefinito admin
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-      
       document.getElementById('inviteEmail').value = '';
     }
 
@@ -1260,12 +1334,13 @@ La tua Biblioteca preferita.`;
 
     function saveEvidenzaSelection() {
       evidenzaList = Array.from(document.querySelectorAll('.ev-chk:checked')).map(el => el.value);
-      localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
-      alert('Libri in evidenza salvati!');
+      saveGlobalState();
+      alert('Libri in evidenza salvati e sincronizzati!');
       renderHomeEvidenza();
     }
 
     function loadConfigToAdmin() {
+      document.getElementById('cfgGithubToken').value = siteConfig.githubToken || localStorage.getItem('biblio_gh_token') || '';
       document.getElementById('cfgTitle').value = siteConfig.title;
       document.getElementById('cfgDesc').value = siteConfig.desc;
       document.getElementById('cfgHeroImg').value = siteConfig.heroImg;
@@ -1281,6 +1356,12 @@ La tua Biblioteca preferita.`;
     }
 
     function saveSiteConfig() {
+      const tokenInput = document.getElementById('cfgGithubToken').value.trim();
+      if(tokenInput) {
+        siteConfig.githubToken = tokenInput;
+        localStorage.setItem('biblio_gh_token', tokenInput);
+      }
+
       siteConfig.title = document.getElementById('cfgTitle').value;
       siteConfig.desc = document.getElementById('cfgDesc').value;
       siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
@@ -1294,9 +1375,9 @@ La tua Biblioteca preferita.`;
       siteConfig.hours = document.getElementById('cfgHours').value;
       siteConfig.email = document.getElementById('cfgEmail').value;
 
-      localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
+      saveGlobalState();
       initSiteConfig();
-      alert('Personalizzazioni salvate con successo!');
+      alert('Personalizzazioni salvate e pubblicate per tutti gli utenti!');
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1308,9 +1389,10 @@ La tua Biblioteca preferita.`;
         document.getElementById('regEmail').value = inviteEmail;
       }
 
-      initSiteConfig();
-      renderNavbar();
-      loadBooks();
+      loadBooks().then(() => {
+        initSiteConfig();
+        renderNavbar();
+      });
     });
   </script>
 </body>
