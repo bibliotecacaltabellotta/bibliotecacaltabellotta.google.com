@@ -50,7 +50,7 @@
       background-color: var(--bg-main);
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1000;
     }
 
     .nav-container {
@@ -87,7 +87,7 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       font-size: 0.9rem;
       color: var(--text-secondary);
       flex-wrap: wrap;
@@ -304,7 +304,7 @@
       </div>
 
       <nav class="nav-links" id="navLinksContainer">
-        <!-- Dinamico -->
+        <!-- Sempre visibile e generata dinamicamente -->
       </nav>
     </div>
   </header>
@@ -578,7 +578,7 @@
           </div>
 
           <div style="border-bottom:1px solid var(--border-color); padding-bottom:16px; margin-bottom:16px;">
-            <h4 style="margin-bottom:10px;">Titolo Principale (Hero)</h4>
+            <h4 style="margin-bottom:10px;">Testo Titolo Principale (Hero)</h4>
             <div class="form-group"><label>Testo</label><input type="text" id="cfgTitleText" class="form-input"></div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
               <div class="form-group"><label>Colore</label><input type="color" id="cfgTitleColor" class="form-input" style="height:35px; cursor:pointer;" value="#f5f2ed"></div>
@@ -601,8 +601,8 @@
           <div style="border-bottom:1px solid var(--border-color); padding-bottom:16px; margin-bottom:16px;">
             <h4 style="margin-bottom:10px;">Contatti & Orari Footer</h4>
             <div class="form-group"><label>Indirizzo</label><input type="text" id="cfgAddress" class="form-input"></div>
-            <div class="form-group"><label>Telefono</label><input type="text" id="cfgPhone" class="form-input"></div>
-            <div class="form-group"><label>Orari di apertura (lascia vuoto se assenti)</label><input type="text" id="cfgHours" class="form-input" placeholder="Es. Lun-Ven: 16:00 - 20:00"></div>
+            <div class="form-group"><label>Telefono (lascia vuoto per non mostrarlo)</label><input type="text" id="cfgPhone" class="form-input" placeholder="+39 ..."></div>
+            <div class="form-group"><label>Orari di apertura (lascia vuoto per non mostrarli)</label><input type="text" id="cfgHours" class="form-input" placeholder="Es. Lun-Ven: 16:00 - 20:00"></div>
           </div>
 
           <button class="btn-primary" onclick="saveSiteConfig()">Salva modifiche sito</button>
@@ -626,7 +626,7 @@
 
   <script>
     // INCOLLA QUI IL LINK CSV DEL TUO FOGLIO SPECCHIO
-    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
+    const GOOGLE_SHEET_CSV_URL = "INCOLLA_QUI_IL_TUO_LINK_CSV";
 
     const FALLBACK_BOOKS = [
       { numero: "455/2", titolo: "Grammatica italiana", autore: "Panzini Alfredo", casa: "Sellerio editore Palermo", stato: "Disponibile", assegnato: "", rientro: "" },
@@ -638,7 +638,7 @@
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
     let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
     let readers = JSON.parse(localStorage.getItem('biblio_readers')) || [
-      { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", restituiti: 0 }
+      { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", restituiti: 0 }
     ];
     let evidenzaList = JSON.parse(localStorage.getItem('biblio_evidenza')) || [];
     let siteConfig = JSON.parse(localStorage.getItem('biblio_config')) || {
@@ -667,8 +667,12 @@
       document.getElementById('footerAddressText').innerHTML = siteConfig.address ? siteConfig.address.replace(' - ', '<br>') : '';
       
       let contactHtml = `Email: bibliotecacaltabellotta@gmail.com`;
-      if(siteConfig.phone) contactHtml += `<br>Tel: ${siteConfig.phone}`;
-      if(siteConfig.hours) contactHtml += `<br>Orari: ${siteConfig.hours}`;
+      if(siteConfig.phone && siteConfig.phone.trim() !== "") {
+        contactHtml += `<br>Tel: ${siteConfig.phone}`;
+      }
+      if(siteConfig.hours && siteConfig.hours.trim() !== "") {
+        contactHtml += `<br>Orari: ${siteConfig.hours}`;
+      }
       document.getElementById('footerContactsText').innerHTML = contactHtml;
     }
 
@@ -748,7 +752,7 @@
     }
 
     async function loadBooks() {
-      if (GOOGLE_SHEET_CSV_URL && GOOGLE_SHEET_CSV_URL !== "INCOLLA_QUI_IL_TUO_LINK_CSV") {
+      if (GOOGLE_SHEET_CSV_URL && GOOGLE_SHEET_CSV_URL !== "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv") {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
           const txt = await res.text();
@@ -763,15 +767,17 @@
             rientro: ''
           }));
           
-          allBooks = csvBooks.map(cb => {
-            let existing = allBooks.find(b => b.titolo === cb.titolo && b.autore === cb.autore);
-            return existing ? { ...cb, stato: existing.stato, assegnato: existing.assegnato, rientro: existing.rientro } : cb;
-          });
+          if(csvBooks.length > 0) {
+            allBooks = csvBooks.map(cb => {
+              let existing = allBooks.find(b => b.titolo === cb.titolo && b.autore === cb.autore);
+              return existing ? { ...cb, stato: existing.stato, assegnato: existing.assegnato, rientro: existing.rientro } : cb;
+            });
+          }
         } catch(e) {}
       }
       
-      // Ordinamento alfabetico per titolo
       allBooks.sort((a,b) => a.titolo.localeCompare(b.titolo));
+      localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       renderCatalog();
       renderHomeEvidenza();
     }
@@ -866,7 +872,6 @@
       `).join('');
     }
 
-    // ACCESSO & REGISTRAZIONE
     function handleLoginSubmit() {
       const identifier = document.getElementById('loginIdentifier').value.trim();
       const pass = document.getElementById('loginPassword').value;
@@ -911,11 +916,10 @@
     }
 
     function simulateGoogleLogin() {
-      let gEmail = "utente.google@gmail.com";
-      let gNick = "GoogleUser";
+      let gEmail = "bibliotecacaltabellotta@gmail.com";
       let user = readers.find(r => r.email === gEmail);
       if(!user) {
-        user = { nickname: gNick, email: gEmail, cellulare: "3339999999", password: "googlepassword", restituiti: 0 };
+        user = { nickname: "BibliotecaCaltabellotta", email: gEmail, cellulare: "3330000000", password: "admin", restituiti: 0 };
         readers.push(user);
         localStorage.setItem('biblio_readers', JSON.stringify(readers));
       }
@@ -995,7 +999,6 @@
       }).join('');
     }
 
-    // ADMIN GESTIONE
     function switchAdminTab(tab) {
       ['Prestiti','Lettori','Evidenza','Sito'].forEach(t => {
         document.getElementById('admin'+t).style.display = (t.toLowerCase() === tab) ? 'block' : 'none';
@@ -1088,7 +1091,7 @@
       document.getElementById('cfgTitleFont').value = siteConfig.titleFont;
       document.getElementById('cfgHeroImg').value = siteConfig.heroImg;
       document.getElementById('cfgAddress').value = siteConfig.address;
-      document.getElementById('cfgPhone').value = siteConfig.phone;
+      document.getElementById('cfgPhone').value = siteConfig.phone || '';
       document.getElementById('cfgHours').value = siteConfig.hours || '';
     }
 
@@ -1113,7 +1116,6 @@
       renderNavbar();
       loadBooks();
 
-      // Controllo se arriva un link di invito con email automatica
       const urlParams = new URLSearchParams(window.location.search);
       const invitedEmail = urlParams.get('email');
       if(invitedEmail) {
