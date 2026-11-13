@@ -811,12 +811,12 @@
           const txt = await res.text();
           const rows = parseCSV(txt);
           const csvBooks = rows.slice(1).filter(r => r[0] || r[1]).map((r, idx) => ({
-            catalogazione: r[2] || String(idx + 1).padStart(3, '0'), // Colonna C
+            catalogazione: r[2] || String(idx + 1).padStart(3, '0'),
             titolo: r[0] || r[1] || '—',
             autore: r[1] && r[0] ? r[1] : (r[2] || '—'),
             casa: r[3] || '—',
-            anno: r[4] || '—', // Colonna E
-            cm: r[5] || '—',     // Colonna F
+            anno: r[4] || '—',
+            cm: r[5] || '—',
             stato: 'Disponibile',
             assegnato: '',
             dataPrestito: '',
@@ -901,7 +901,6 @@
         return;
       }
       tbody.innerHTML = favorites.map(fBook => {
-        // Recupera sempre i dati aggiornati del libro dal catalogo principale per verificarne la disponibilità reale
         const liveBook = allBooks.find(b => b.titolo === fBook.titolo) || fBook;
         const isDisp = liveBook.stato === 'Disponibile';
         const badge = isDisp 
@@ -1231,10 +1230,18 @@
       if(!email) { alert('Inserisci un indirizzo email.'); return; }
       
       const linkReg = window.location.href.split('#')[0] + "?email=" + encodeURIComponent(email);
-      const subject = encodeURIComponent("Invito alla Biblioteca di Caltabellotta");
-      const body = encodeURIComponent(`Ciao!\n\nSei invitato/a a registrarti nella Biblioteca di Caltabellotta.\n\nClicca sul link sottostante per completare la registrazione con la tua email:\n${linkReg}\n\nTi aspettiamo!`);
+      const subject = encodeURIComponent("Invito alla registrazione alla Biblioteca di Caltabellotta");
       
-      // Apre direttamente il client di posta predefinito con l'email mittente dell'admin e i dati compilati
+      // Corpo del messaggio con il link incorporato nella parola "qui"
+      const bodyText = `Carissim* lettore/lettrice,
+siamo davvero entusiasti di invitarti a registrarti al nostro sito ufficiale, dove potrai consultare tutto quello che può servirti sui nostri libri!
+Clicca qui (${linkReg}) per essere reindirizzato direttamente alla pagina di registrazione; in pochi click sarai dentro!
+Grazie e buona lettura!
+La tua Biblioteca preferita.`;
+
+      const body = encodeURIComponent(bodyText);
+      
+      // Apre il client mail predefinito simulando l'invio dall'account admin
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
       
       document.getElementById('inviteEmail').value = '';
