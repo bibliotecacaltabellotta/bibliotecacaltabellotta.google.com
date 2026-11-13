@@ -87,8 +87,8 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
+      gap: 10px;
+      font-size: 0.95rem;
       color: var(--text-secondary);
       flex-wrap: wrap;
     }
@@ -98,9 +98,9 @@
       border: 1px solid transparent;
       color: var(--text-secondary);
       font-family: inherit;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       cursor: pointer;
-      padding: 6px 12px;
+      padding: 8px 14px;
       border-radius: 6px;
       display: flex;
       align-items: center;
@@ -108,25 +108,25 @@
       transition: all 0.2s;
     }
 
-    .nav-links button:hover { color: var(--text-primary); }
+    .nav-links button:hover { color: var(--text-primary); background-color: var(--bg-surface); }
     .nav-links button.active-tab {
       border-color: var(--accent);
       color: var(--text-primary);
-      background-color: rgba(168, 50, 38, 0.12);
+      background-color: rgba(168, 50, 38, 0.15);
     }
 
     .btn-primary {
       background-color: var(--accent) !important;
       color: #fff !important;
       font-weight: 500;
-      padding: 8px 16px !important;
+      padding: 10px 20px !important;
       border-radius: 6px;
       border: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       transition: background 0.2s;
     }
     .btn-primary:hover { background-color: var(--accent-hover) !important; }
@@ -135,9 +135,9 @@
       background-color: var(--bg-surface);
       border: 1px solid var(--border-color);
       color: var(--text-primary);
-      padding: 8px 16px;
+      padding: 10px 18px;
       border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       cursor: pointer;
       transition: background 0.2s;
     }
@@ -160,27 +160,27 @@
     }
 
     .hero-top-label {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.15em;
       color: var(--text-secondary);
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       font-weight: 600;
     }
     .hero-title {
       font-size: var(--hero-title-size);
       font-family: var(--hero-title-font);
       color: var(--hero-title-color);
-      line-height: 1.15;
-      margin-bottom: 16px;
-      max-width: 800px;
+      line-height: 1.2;
+      margin-bottom: 18px;
+      max-width: 850px;
     }
     .hero-title span { color: var(--accent); font-style: italic; }
     .hero-desc {
       color: var(--text-secondary);
-      font-size: 1.05rem;
-      max-width: 650px;
-      margin-bottom: 32px;
+      font-size: 1.1rem;
+      max-width: 700px;
+      margin-bottom: 36px;
     }
     .hero-banner {
       width: 100%;
@@ -626,20 +626,30 @@
 
   <script>
     // INCOLLA QUI IL LINK CSV DEL TUO FOGLIO SPECCHIO
-    const GOOGLE_SHEET_CSV_URL = "INCOLLA_QUI_IL_TUO_LINK_CSV";
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
     const FALLBACK_BOOKS = [
       { numero: "455/2", titolo: "Grammatica italiana", autore: "Panzini Alfredo", casa: "Sellerio editore Palermo", stato: "Disponibile", assegnato: "", rientro: "" },
       { numero: "843.9/66", titolo: "E poi alla fine", autore: "Sagan Françoise", casa: "Mondadori Editore SPA", stato: "Disponibile", assegnato: "", rientro: "" },
-      { numero: "843.9/86", titolo: "Medici all'Inferno", autore: "Deloche Alain", casa: "Mondadori Editore SPA", stato: "Disponibile", assegnato: "", rientro: "" }
+      { numero: "843.9/86", titolo: "Medici all'Inferno", autore: "Deloche Alain", casa: "Mondadori Editore SPA", stato: "Disponibile", assegnato: "", rientro: "" },
+      { numero: "843.92/2", titolo: "Un aereo senza di lei", autore: "Bussi Michel", casa: "Mondadori Editore SPA", stato: "Disponibile", assegnato: "", rientro: "" },
+      { numero: "850/43", titolo: "L'età del romanticismo", autore: "De Donato Gigliola", casa: "Palumbo", stato: "Disponibile", assegnato: "", rientro: "" },
+      { numero: "COM01", titolo: "Communion", autore: "Strieber Whitley", casa: "Arnoldo Mondadori Ed", stato: "Disponibile", assegnato: "", rientro: "" }
     ];
 
     let allBooks = JSON.parse(localStorage.getItem('biblio_books')) || FALLBACK_BOOKS;
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
     let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
+    
     let readers = JSON.parse(localStorage.getItem('biblio_readers')) || [
       { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", restituiti: 0 }
     ];
+
+    // Assicura sempre che l'admin esista nei lettori
+    if(!readers.some(r => r.email === "bibliotecacaltabellotta@gmail.com")) {
+      readers.unshift({ nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", restituiti: 0 });
+    }
+
     let evidenzaList = JSON.parse(localStorage.getItem('biblio_evidenza')) || [];
     let siteConfig = JSON.parse(localStorage.getItem('biblio_config')) || {
       accent: "#a83226",
@@ -752,7 +762,7 @@
     }
 
     async function loadBooks() {
-      if (GOOGLE_SHEET_CSV_URL && GOOGLE_SHEET_CSV_URL !== "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv") {
+      if (GOOGLE_SHEET_CSV_URL && GOOGLE_SHEET_CSV_URL !== "INCOLLA_QUI_IL_TUO_LINK_CSV") {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
           const txt = await res.text();
@@ -925,7 +935,7 @@
       }
       currentUser = { email: user.email, nickname: user.nickname, cellulare: user.cellulare };
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
-      alert('Accesso con Google completato!');
+      alert('Accesso con Google completato come Biblioteca di Caltabellotta!');
       switchView('home');
     }
 
