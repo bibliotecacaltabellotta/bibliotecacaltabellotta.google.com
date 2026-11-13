@@ -6,7 +6,7 @@
   <title>Biblioteca di Caltabellotta</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-main: #16120e;
@@ -20,6 +20,10 @@
       --text-muted: #7a7167;
       --font-family: 'Inter', sans-serif;
       --heading-font: 'Lora', Georgia, serif;
+      --hero-title-color: #f5f2ed;
+      --hero-word-color: #a83226;
+      --hero-title-font: var(--heading-font);
+      --hero-word-font: var(--heading-font);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -173,7 +177,9 @@
       margin-bottom: 16px;
       max-width: 800px;
     }
-    .hero-title span { color: var(--accent); font-style: italic; }
+    .hero-title .main-text { color: var(--hero-title-color); font-family: var(--hero-title-font); }
+    .hero-title .word-highlight { color: var(--hero-word-color); font-family: var(--hero-word-font); font-style: italic; }
+    
     .hero-desc {
       color: var(--text-secondary);
       font-size: 1.05rem;
@@ -190,18 +196,34 @@
     }
     .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.92); }
 
-    /* ACCEDI MODAL / CONTAINER */
+    /* ACCEDI / REGISTRAZIONE */
     .auth-card {
-      max-width: 440px;
+      max-width: 460px;
       margin: 20px auto;
       background-color: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 36px;
-      text-align: center;
     }
-    .auth-card h2 { font-size: 1.8rem; margin-bottom: 6px; }
-    .auth-card p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px; }
+    .auth-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+    .auth-tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+    .auth-tab-btn.active { background: var(--accent); color: #fff; }
+
     .google-btn {
       width: 100%;
       background: #fff;
@@ -232,7 +254,7 @@
     }
     .divider::before { margin-right: 10px; }
     .divider::after { margin-left: 10px; }
-    .form-group { text-align: left; margin-bottom: 16px; }
+    .form-group { text-align: left; margin-bottom: 16px; position: relative; }
     .form-group label { display: block; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-secondary); }
     .form-input {
       width: 100%;
@@ -241,7 +263,17 @@
       color: var(--text-primary);
       padding: 10px 14px;
       border-radius: 6px;
-      font-size: 0.95rem;
+      font-size: 0.95prpx;
+    }
+    .toggle-pass {
+      position: absolute;
+      right: 12px;
+      top: 34px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 0.8rem;
     }
 
     /* TABELLE & CATALOGO */
@@ -295,7 +327,7 @@
       </div>
 
       <nav class="nav-links" id="navLinksContainer">
-        <!-- Generato via JS in base al login -->
+        <!-- Generato via JS -->
       </nav>
     </div>
   </header>
@@ -304,7 +336,9 @@
     <!-- HOME -->
     <section id="view-home" class="view-section active">
       <div class="hero-top-label" id="homeTopLabel">BIBLIOTECA COMUNALE · CALTABELLOTTA</div>
-      <h1 class="hero-title" id="homeMainTitle">I libri di Caltabellotta, a portata di <span>ricerca</span></h1>
+      <h1 class="hero-title" id="homeMainTitleContainer">
+        <span id="heroMainText" class="main-text">I libri di Caltabellotta, a portata di</span> <span id="heroWordText" class="word-highlight">ricerca</span>
+      </h1>
       <p class="hero-desc" id="homeMainDesc">Il catalogo della biblioteca del paese, consultabile da chiunque. Cerca per titolo o per autore e scopri cosa puoi prendere in prestito.</p>
       
       <button class="btn-primary" onclick="switchView('catalogo')">Sfoglia il catalogo →</button>
@@ -329,58 +363,93 @@
       </div>
 
       <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
-        <input type="text" id="searchInput" class="form-input" style="max-width: 320px;" placeholder="Cerca nel catalogo..." oninput="handleSearch()">
+        <input type="text" id="searchInput" class="form-input" style="max-width: 320px;" placeholder="Cerca nel catalogo..." oninput="handleCatalogSearch()">
       </div>
 
       <div class="table-container">
         <table>
           <thead>
             <tr>
+              <th id="thCatalogCat" style="display:none;">N. Catalogazione</th>
               <th>Titolo</th>
               <th>Autore</th>
               <th>Casa editrice</th>
+              <th>Anno</th>
               <th>Stato Prestito</th>
               <th style="text-align: center;">Preferito</th>
             </tr>
           </thead>
           <tbody id="catalogTableBody">
-            <tr><td colspan="5" style="text-align:center; padding: 24px;">Caricamento catalogo...</td></tr>
+            <tr><td colspan="7" style="text-align:center; padding: 24px;">Caricamento catalogo...</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- ACCEDI / REGISTRATI -->
+    <!-- ACCEDI / REGISTRAZIONE -->
     <section id="view-accedi" class="view-section">
       <div class="auth-card">
-        <h2>Bentornato/a</h2>
-        <p>Accedi al tuo account o registrati</p>
-        
-        <button class="google-btn" onclick="simulateGoogleLogin()">
-          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.14C3.15 21.32 7.22 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.62H1.18C.43 8.12 0 9.81 0 12s.43 3.88 1.18 5.38l4.09-3.14z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.22 0 3.15 2.68 1.18 6.62l4.09 3.14c.95-2.85 3.6-4.91 6.73-4.91z"/></svg>
-          Continua con Google
-        </button>
-
-        <div class="divider">Oppure continua con l'email</div>
-
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="loginEmail" class="form-input" placeholder="tu@esempio.it">
-        </div>
-        <div class="form-group">
-          <label>Nickname</label>
-          <input type="text" id="loginNickname" class="form-input" placeholder="Il tuo nickname unico">
-        </div>
-        <div class="form-group">
-          <label>Cellulare (opzionale)</label>
-          <input type="text" id="loginPhone" class="form-input" placeholder="3331234567">
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••">
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tabAccediBtn" onclick="switchAuthTab('accedi')">Accedi</button>
+          <button class="auth-tab-btn" id="tabRegistraBtn" onclick="switchAuthTab('registra')">Registrati</button>
         </div>
 
-        <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="handleLoginRegister()">Accedi / Registrati</button>
+        <!-- ACCEDI FORM -->
+        <div id="authAccediSection">
+          <h2 style="font-size: 1.5rem; margin-bottom: 6px;">Bentornato/a</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">Accedi con le tue credenziali</p>
+          
+          <button class="google-btn" onclick="googleLogin()">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.14C3.15 21.32 7.22 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.62H1.18C.43 8.12 0 9.81 0 12s.43 3.88 1.18 5.38l4.09-3.14z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.22 0 3.15 2.68 1.18 6.62l4.09 3.14c.95-2.85 3.6-4.91 6.73-4.91z"/></svg>
+            Accedi con Google
+          </button>
+
+          <div class="divider">Oppure con credenziali</div>
+
+          <div class="form-group">
+            <label>Nickname, Cellulare o Mail</label>
+            <input type="text" id="loginId" class="form-input" placeholder="Inserisci identificativo">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPass" class="form-input" placeholder="••••••••">
+            <button class="toggle-pass" onclick="togglePass('loginPass', this)">Mostra</button>
+          </div>
+          <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="handleLogin()">Accedi</button>
+        </div>
+
+        <!-- REGISTRAZIONE FORM -->
+        <div id="authRegistraSection" style="display:none;">
+          <h2 style="font-size: 1.5rem; margin-bottom: 6px;">Crea Account</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">Registrati per usufruire di tutti i servizi</p>
+          
+          <button class="google-btn" onclick="googleRegister()">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.14C3.15 21.32 7.22 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.62H1.18C.43 8.12 0 9.81 0 12s.43 3.88 1.18 5.38l4.09-3.14z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.22 0 3.15 2.68 1.18 6.62l4.09 3.14c.95-2.85 3.6-4.91 6.73-4.91z"/></svg>
+            Registrati con Google
+          </button>
+
+          <div class="divider">Oppure inserisci i dati</div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="regEmail" class="form-input" placeholder="tu@esempio.it">
+          </div>
+          <div class="form-group">
+            <label>Cellulare</label>
+            <input type="text" id="regPhone" class="form-input" placeholder="3331234567">
+          </div>
+          <div class="form-group">
+            <label>Nickname</label>
+            <input type="text" id="regNickname" class="form-input" placeholder="Il tuo nickname unico">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="regPass" class="form-input" placeholder="••••••••">
+            <button class="toggle-pass" onclick="togglePass('regPass', this)">Mostra</button>
+          </div>
+          <button class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="handleRegister()">Registrati</button>
+        </div>
+
       </div>
     </section>
 
@@ -388,7 +457,7 @@
     <section id="view-preferiti" class="view-section">
       <div class="page-header">
         <h1>I miei preferiti</h1>
-        <p style="color: var(--text-secondary);">I libri che hai salvato. Riceverai un avviso se tornano disponibili.</p>
+        <p style="color: var(--text-secondary);">I libri che hai salvato.</p>
       </div>
       <div class="table-container">
         <table>
@@ -409,20 +478,60 @@
         <p style="color: var(--text-secondary);">I tuoi dati personali e statistiche di prestito.</p>
       </div>
       <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
-        <h3 id="profEmail" style="margin-bottom: 6px;">email@example.com</h3>
-        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">Nickname: <strong id="profNickname" style="color:var(--text-primary)"></strong></p>
+        <div class="form-group"><label>Email</label><input type="text" id="profEmailInput" class="form-input" disabled></div>
+        <div class="form-group"><label>Cellulare</label><input type="text" id="profPhoneInput" class="form-input"></div>
+        <div class="form-group"><label>Nickname</label><input type="text" id="profNickInput" class="form-input"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="profPassInput" class="form-input"><button class="toggle-pass" onclick="togglePass('profPassInput', this)">Mostra</button></div>
         
+        <button class="btn-primary" style="margin-bottom: 24px;" onclick="updateProfileData()">Salva modifiche profilo</button>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
           <div style="background: var(--bg-main); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
-            <div id="profBooksReturned" style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">0</div>
+            <div id="profBooksReturnedCount" style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">0</div>
             <div style="font-size: 0.85rem; color: var(--text-secondary);">Libri restituiti</div>
           </div>
           <div style="background: var(--bg-main); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
-            <div id="profActiveLoans" style="font-size: 1.5rem; font-weight: 700;">0</div>
+            <div id="profActiveLoansCount" style="font-size: 1.5rem; font-weight: 700;">0</div>
             <div style="font-size: 0.85rem; color: var(--text-secondary);">Prestiti attivi</div>
           </div>
         </div>
-        <button class="btn-secondary" onclick="logoutUser()">Disconnettiti</button>
+
+        <h3 style="margin-top: 20px; font-size: 1.1rem;">Libri attivi in prestito</h3>
+        <div id="profActiveLoansList" style="margin: 10px 0 20px; color: var(--text-secondary); font-size: 0.9rem;">Nessun prestito attivo.</div>
+
+        <h3 style="margin-top: 20px; font-size: 1.1rem;">Storico libri restituiti</h3>
+        <div id="profReturnedLoansList" style="margin: 10px 0 20px; color: var(--text-secondary); font-size: 0.9rem;">Nessun libro restituito.</div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <button class="btn-secondary" onclick="logoutUser()">Disconnettiti</button>
+          <button style="background: #8B0000; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="deleteAccount()">Elimina Account</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHEDA PERSONALE UTENTE (VISIBILE DA ADMIN) -->
+    <section id="view-scheda-utente" class="view-section">
+      <div class="page-header">
+        <button class="btn-secondary" style="margin-bottom: 16px;" onclick="switchView('lettori')">← Torna ai lettori</button>
+        <h1 id="schedaTitle">Scheda Utente</h1>
+      </div>
+      <div class="auth-card" style="margin: 0; text-align: left; max-width: 700px;">
+        <p><strong>Email:</strong> <span id="schEmail"></span></p>
+        <p><strong>Cellulare:</strong> <span id="schPhone"></span></p>
+        <p><strong>Nickname:</strong> <span id="schNick"></span></p>
+        <hr style="border-color: var(--border-color); margin: 16px 0;">
+        <p><strong>Libri restituiti:</strong> <span id="schRetCount">0</span></p>
+        <div id="schRetList" style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 12px;"></div>
+        <p><strong>Prestiti attivi:</strong> <span id="schActCount">0</span></p>
+        <div id="schActList" style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 12px;"></div>
+        <p><strong>Preferiti:</strong></p>
+        <div id="schFavList" style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 16px;"></div>
+        
+        <div class="form-group" style="margin-top: 20px;">
+          <label><strong>Note riservate (visibili solo all'admin)</strong></label>
+          <textarea id="schAdminNotes" class="form-input" rows="3" placeholder="Scrivi note sull'utente..."></textarea>
+        </div>
+        <button class="btn-primary" onclick="saveAdminNotes()">Salva note</button>
       </div>
     </section>
 
@@ -430,17 +539,17 @@
     <section id="view-lettori" class="view-section">
       <div class="page-header">
         <h1>I lettori</h1>
-        <p style="color: var(--text-secondary);">Cerca un nickname e scopri i libri restituiti.</p>
+        <p style="color: var(--text-secondary);">Cerca un nickname.</p>
       </div>
 
       <div style="margin-bottom: 20px;">
-        <input type="text" id="searchReaderInput" class="form-input" style="max-width: 300px;" placeholder="Cerca nickname..." oninput="renderReaders()">
+        <input type="text" id="searchReaderInput" class="form-input" style="max-width: 300px;" placeholder="Cerca username..." oninput="renderReaders()">
       </div>
 
       <div class="table-container" style="max-width: 800px;">
         <table>
           <thead>
-            <tr><th>Nickname</th><th>Email</th><th>Cellulare</th><th style="text-align: right;">Libri restituiti</th></tr>
+            <tr><th>Nickname</th><th style="text-align: right;">Libri restituiti</th></tr>
           </thead>
           <tbody id="readersTableBody">
             <!-- Dinamico -->
@@ -458,7 +567,7 @@
 
       <div style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
         <button class="btn-secondary active-tab" onclick="switchAdminTab('prestiti')" id="admTabPrestiti">Prestiti</button>
-        <button class="btn-secondary" onclick="switchAdminTab('lettori')" id="admTabLettori">Aggiungi Lettore</button>
+        <button class="btn-secondary" onclick="switchAdminTab('lettori')" id="admTabLettori">Invita Lettore</button>
         <button class="btn-secondary" onclick="switchAdminTab('evidenza')" id="admTabEvidenza">In Evidenza</button>
         <button class="btn-secondary" onclick="switchAdminTab('sito')" id="admTabSito">Personalizza Sito</button>
       </div>
@@ -468,29 +577,28 @@
         <div class="table-container">
           <table>
             <thead>
-              <tr><th>Titolo Libro</th><th>Stato</th><th>Assegnato a (Email)</th><th>Rientro previsto</th><th>Azioni</th></tr>
+              <tr><th>Titolo Libro</th><th>Stato</th><th>Assegnato a (Email / Fantasma)</th><th>Data Prestito</th><th>Rientro previsto</th><th>Note / Azioni</th></tr>
             </thead>
             <tbody id="adminPrestitiBody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- TAB AGGIUNGI LETTORE -->
+      <!-- TAB INVITA LETTORE -->
       <div id="adminLettori" class="admin-panel" style="display:none;">
         <div class="auth-card" style="margin: 0; text-align: left; max-width: 500px;">
-          <h3>Invita / Aggiungi nuovo lettore</h3>
-          <p>Inserisci la mail per registrare l'utente.</p>
-          <div class="form-group"><label>Email</label><input type="email" id="newReaderEmail" class="form-input"></div>
-          <div class="form-group"><label>Nickname</label><input type="text" id="newReaderNick" class="form-input"></div>
-          <button class="btn-primary" onclick="adminAddNewReader()">Aggiungi lettore</button>
+          <h3>Invita Lettore</h3>
+          <p>Inserisci la mail dell'utente da invitare.</p>
+          <div class="form-group"><label>Email</label><input type="email" id="inviteEmail" class="form-input" placeholder="utente@esempio.it"></div>
+          <button class="btn-primary" onclick="sendInviteEmail()">Invia invito</button>
         </div>
       </div>
 
       <!-- TAB EVIDENZA -->
       <div id="adminEvidenza" class="admin-panel" style="display:none;">
-        <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
+        <div class="auth-card" style="margin: 0; text-align: left; max-width: 700px;">
           <h3>Gestisci Libri in Evidenza</h3>
-          <p>Seleziona quali libri mostrare in home page.</p>
+          <input type="text" id="evidenzaSearch" class="form-input" style="margin-bottom: 16px;" placeholder="Cerca libro per evidenza..." oninput="renderAdminEvidenzaChecklist()">
           <div id="adminEvidenzaChecklist" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;"></div>
           <button class="btn-primary" onclick="saveEvidenzaSelection()">Salva evidenza</button>
         </div>
@@ -498,14 +606,38 @@
 
       <!-- TAB SITO (PERSONALIZZAZIONE) -->
       <div id="adminSito" class="admin-panel" style="display:none;">
-        <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
-          <h3>Personalizzazione Grafica e Testi</h3>
-          <div class="form-group"><label>Colore principale (Accento)</label><input type="color" id="cfgAccent" class="form-input" value="#a83226"></div>
-          <div class="form-group"><label>Testo Titolo Hero</label><input type="text" id="cfgTitle" class="form-input" value="I libri di Caltabellotta, a portata di ricerca"></div>
-          <div class="form-group"><label>URL Immagine Copertina</label><input type="text" id="cfgHeroImg" class="form-input" value="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80"></div>
-          <div class="form-group"><label>Indirizzo Footer</label><input type="text" id="cfgAddress" class="form-input" value="Via Cossentino, 2 - 92010 Caltabellotta (AG)"></div>
-          <div class="form-group"><label>Telefono Footer</label><input type="text" id="cfgPhone" class="form-input" value="+39 0925 000000"></div>
-          <button class="btn-primary" onclick="saveSiteConfig()">Salva modifiche sito</button>
+        <div class="auth-card" style="margin: 0; text-align: left; max-width: 700px;">
+          <h3>Personalizzazione Sito</h3>
+          
+          <h4 style="margin: 16px 0 8px; color: var(--accent);">Facciata principale</h4>
+          <div class="form-group"><label>Modifica Titolo</label><input type="text" id="cfgTitle" class="form-input"></div>
+          <div class="form-group"><label>Modifica Sottotitolo</label><textarea id="cfgDesc" class="form-input" rows="2"></textarea></div>
+          <div class="form-group"><label>Modifica Foto (URL)</label><input type="text" id="cfgHeroImg" class="form-input"></div>
+          <div class="form-group"><label>Colore Testo Titolo</label><input type="color" id="cfgTitleColor" class="form-input" style="height:40px; padding:4px;"></div>
+          <div class="form-group"><label>Colore Parola Evidenziata ("ricerca")</label><input type="color" id="cfgWordColor" class="form-input" style="height:40px; padding:4px;"></div>
+          <div class="form-group"><label>Font Testo Titolo</label>
+            <select id="cfgTitleFont" class="form-input">
+              <option value="'Lora', Georgia, serif">Lora (Serif)</option>
+              <option value="'Inter', sans-serif">Inter (Sans)</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Font Parola Evidenziata</label>
+            <select id="cfgWordFont" class="form-input">
+              <option value="'Lora', Georgia, serif">Lora (Serif)</option>
+              <option value="'Inter', sans-serif">Inter (Sans)</option>
+            </select>
+          </div>
+
+          <h4 style="margin: 24px 0 8px; color: var(--accent);">Sito generale</h4>
+          <div class="form-group"><label>Colore principale</label><input type="color" id="cfgAccent" class="form-input" style="height:40px; padding:4px;"></div>
+
+          <h4 style="margin: 24px 0 8px; color: var(--accent);">Footer</h4>
+          <div class="form-group"><label>Indirizzo</label><input type="text" id="cfgAddress" class="form-input"></div>
+          <div class="form-group"><label>Telefono</label><input type="text" id="cfgPhone" class="form-input"></div>
+          <div class="form-group"><label>Orari di apertura</label><input type="text" id="cfgHours" class="form-input" placeholder="Es. Lun-Ven 9:00 - 13:00"></div>
+          <div class="form-group"><label>Email</label><input type="text" id="cfgEmail" class="form-input"></div>
+
+          <button class="btn-primary" style="margin-top: 16px;" onclick="saveSiteConfig()">Salva personalizzazioni</button>
         </div>
       </div>
     </section>
@@ -513,9 +645,8 @@
 
   <footer>
     <div class="footer-container">
-      <div class="footer-top">
-        <div class="footer-col"><h4>Indirizzo</h4><p id="footerAddressText">Via Cossentino, 2<br>92010 Caltabellotta (AG)</p></div>
-        <div class="footer-col"><h4>Contatti</h4><p>Email: bibliotecacaltabellotta@gmail.com<br>Tel: <span id="footerPhoneText">+39 0925 000000</span></p></div>
+      <div class="footer-top" id="footerTopContainer">
+        <!-- Dinamico in base ai campi compilati -->
       </div>
       <div class="footer-bottom">
         <div><strong>Biblioteca di Caltabellotta</strong> | Biblioteca comunale</div>
@@ -525,33 +656,73 @@
   </footer>
 
   <script>
-    // Link CSV ufficiale del tuo Google Sheet integrato
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
     const FALLBACK_BOOKS = [
-      { titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori", stato: "Disponibile", assegnato: "", rientro: "" },
-      { titolo: "25 agosto 1983 ed altri racconti inediti", autore: "Borges Jorge Luis", casa: "Ricci Franco Maria Ed", stato: "Disponibile", assegnato: "", rientro: "" },
-      { titolo: "Addio a Berlino", autore: "Isherwood", casa: "Garzanti", stato: "Disponibile", assegnato: "", rientro: "" },
-      { titolo: "Ali della notte", autore: "Silverberg Robert", casa: "Editrice Nord", stato: "Disponibile", assegnato: "", rientro: "" }
+      { catalogazione: "001", titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori", anno: "1982", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
+      { catalogazione: "002", titolo: "25 agosto 1983 ed altri racconti inediti", autore: "Borges Jorge Luis", casa: "Ricci Franco Maria Ed", anno: "1990", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
+      { catalogazione: "003", titolo: "Addio a Berlino", autore: "Isherwood", casa: "Garzanti", anno: "1975", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" }
     ];
 
     let allBooks = JSON.parse(localStorage.getItem('biblio_books')) || FALLBACK_BOOKS;
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
     let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
+    
     let readers = JSON.parse(localStorage.getItem('biblio_readers')) || [
-      { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", restituiti: 0 },
-      { nickname: "MarioRossi", email: "mario@example.com", cellulare: "3331111111", restituiti: 2 }
+      { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] },
+      { nickname: "MarioRossi", email: "mario@example.com", cellulare: "3331111111", password: "password", adminNotes: "", returnedBooks: [], activeLoans: [] }
     ];
+
+    if(!readers.some(r => r.email === "bibliotecacaltabellotta@gmail.com")) {
+      readers.unshift({ nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] });
+    }
+
     let evidenzaList = JSON.parse(localStorage.getItem('biblio_evidenza')) || [];
-    let siteConfig = JSON.parse(localStorage.getItem('biblio_config')) || { accent: "#a83226", title: "I libri di Caltabellotta, a portata di ricerca", heroImg: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80", address: "Via Cossentino, 2 - 92010 Caltabellotta (AG)", phone: "+39 0925 000000" };
+    let siteConfig = JSON.parse(localStorage.getItem('biblio_config')) || { 
+      accent: "#a83226", 
+      title: "I libri di Caltabellotta, a portata di", 
+      word: "ricerca",
+      desc: "Il catalogo della biblioteca del paese, consultabile da chiunque. Cerca per titolo o per autore e scopri cosa puoi prendere in prestito.",
+      heroImg: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80", 
+      titleColor: "#f5f2ed",
+      wordColor: "#a83226",
+      titleFont: "'Lora', Georgia, serif",
+      wordFont: "'Lora', Georgia, serif",
+      address: "Via Cossentino, 2 - 92010 Caltabellotta (AG)", 
+      phone: "+39 0925 000000",
+      hours: "Lun - Ven: 9:00 - 13:00",
+      email: "bibliotecacaltabellotta@gmail.com"
+    };
+
+    function isAdmin() {
+      if(!currentUser) return false;
+      return currentUser.email === "bibliotecacaltabellotta@gmail.com" || currentUser.cellulare === "3330000000" || currentUser.nickname.toLowerCase() === "bibliotecacaltabellotta";
+    }
 
     function initSiteConfig() {
       document.documentElement.style.setProperty('--accent', siteConfig.accent);
       document.documentElement.style.setProperty('--accent-hover', siteConfig.accent);
-      document.getElementById('homeMainTitle').innerHTML = siteConfig.title.replace('ricerca', '<span>ricerca</span>');
+      document.documentElement.style.setProperty('--hero-title-color', siteConfig.titleColor || '#f5f2ed');
+      document.documentElement.style.setProperty('--hero-word-color', siteConfig.wordColor || '#a83226');
+      document.documentElement.style.setProperty('--hero-title-font', siteConfig.titleFont || "'Lora', Georgia, serif");
+      document.documentElement.style.setProperty('--hero-word-font', siteConfig.wordFont || "'Lora', Georgia, serif");
+
+      document.getElementById('heroMainText').innerText = siteConfig.title || "I libri di Caltabellotta, a portata di";
+      document.getElementById('heroWordText').innerText = siteConfig.word || "ricerca";
+      document.getElementById('homeMainDesc').innerText = siteConfig.desc || "";
       document.getElementById('heroImageTag').src = siteConfig.heroImg;
-      document.getElementById('footerAddressText').innerHTML = siteConfig.address.replace(' - ', '<br>');
-      document.getElementById('footerPhoneText').innerText = siteConfig.phone;
+
+      // Footer dinamico
+      let footerHTML = '';
+      if(siteConfig.address) footerHTML += `<div class="footer-col"><h4>Indirizzo</h4><p>${siteConfig.address.replace(' - ', '<br>')}</p></div>`;
+      if(siteConfig.hours) footerHTML += `<div class="footer-col"><h4>Orari di apertura</h4><p>${siteConfig.hours}</p></div>`;
+      if(siteConfig.phone || siteConfig.email) {
+        footerHTML += `<div class="footer-col"><h4>Contatti</h4><p>`;
+        if(siteConfig.email) footerHTML += `Email: ${siteConfig.email}<br>`;
+        if(siteConfig.phone) footerHTML += `Tel: ${siteConfig.phone}`;
+        footerHTML += `</p></div>`;
+      }
+      document.getElementById('footerTopContainer').innerHTML = footerHTML;
     }
 
     function switchView(viewName) {
@@ -562,7 +733,7 @@
       if(viewName === 'preferiti') renderFavorites();
       if(viewName === 'profilo') renderProfile();
       if(viewName === 'lettori') renderReaders();
-      if(viewName === 'gestione') renderAdminPrestiti();
+      if(viewName === 'gestione') { renderAdminPrestiti(); loadConfigToAdmin(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -581,7 +752,7 @@
           <button onclick="switchView('preferiti')">Preferiti</button>
           <button onclick="switchView('profilo')">Profilo</button>
         `;
-        if (currentUser.email === 'bibliotecacaltabellotta@gmail.com') {
+        if (isAdmin()) {
           html += `<button class="btn-primary" onclick="switchView('gestione')">Gestione</button>`;
         }
         html += `<button onclick="logoutUser()">Esci</button>`;
@@ -589,7 +760,32 @@
       nav.innerHTML = html;
     }
 
-    // CSV PARSER
+    function switchAuthTab(tab) {
+      if(tab === 'accedi') {
+        document.getElementById('authAccediSection').style.display = 'block';
+        document.getElementById('authRegistraSection').style.display = 'none';
+        document.getElementById('tabAccediBtn').classList.add('active');
+        document.getElementById('tabRegistraBtn').classList.remove('active');
+      } else {
+        document.getElementById('authAccediSection').style.display = 'none';
+        document.getElementById('authRegistraSection').style.display = 'block';
+        document.getElementById('tabRegistraBtn').classList.add('active');
+        document.getElementById('tabAccediBtn').classList.remove('active');
+      }
+    }
+
+    function togglePass(id, btn) {
+      const input = document.getElementById(id);
+      if(input.type === 'password') {
+        input.type = 'text';
+        btn.innerText = 'Nascondi';
+      } else {
+        input.type = 'password';
+        btn.innerText = 'Mostra';
+      }
+    }
+
+    // PARSER CSV
     function parseCSV(text) {
       const rows = []; let row = []; let val = ''; let q = false;
       for (let i = 0; i < text.length; i++) {
@@ -606,17 +802,34 @@
     }
 
     async function loadBooks() {
-      if (GOOGLE_SHEET_CSV_URL && GOOGLE_SHEET_CSV_URL !== "INCOLLA_QUI_IL_TUO_LINK_CSV") {
+      if (GOOGLE_SHEET_CSV_URL) {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
           const txt = await res.text();
           const rows = parseCSV(txt);
-          allBooks = rows.slice(1).filter(r => r[0]).map(r => {
-            let existing = allBooks.find(b => b.titolo === r[0]);
-            return existing || { titolo: r[0], autore: r[1] || '—', casa: r[3] || '—', stato: 'Disponibile', assegnato: '', rientro: '' };
-          });
+          const csvBooks = rows.slice(1).filter(r => r[0] || r[1]).map((r, idx) => ({
+            catalogazione: r[4] || String(idx + 1).padStart(3, '0'),
+            titolo: r[0] || r[1] || '—',
+            autore: r[1] && r[0] ? r[1] : (r[2] || '—'),
+            casa: r[3] || '—',
+            anno: r[5] || '—',
+            stato: 'Disponibile',
+            assegnato: '',
+            dataPrestito: '',
+            rientro: '',
+            notePrestito: ''
+          }));
+          if(csvBooks.length > 0) {
+            allBooks = csvBooks.map(cb => {
+              let existing = allBooks.find(b => b.titolo.toLowerCase() === cb.titolo.toLowerCase());
+              return existing ? { ...cb, stato: existing.stato, assegnato: existing.assegnato, dataPrestito: existing.dataPrestito, rientro: existing.rientro, notePrestito: existing.notePrestito } : cb;
+            });
+          }
         } catch(e) {}
       }
+      // Ordinamento alfabetico per titolo
+      allBooks.sort((a, b) => a.titolo.localeCompare(b.titolo));
+      localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       renderCatalog();
       renderHomeEvidenza();
     }
@@ -624,23 +837,41 @@
     function renderCatalog() {
       const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
       const tbody = document.getElementById('catalogTableBody');
+      const thCat = document.getElementById('thCatalogCat');
+      
+      if(isAdmin()) {
+        thCat.style.display = 'table-cell';
+      } else {
+        thCat.style.display = 'none';
+      }
+
       const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(query) || b.autore.toLowerCase().includes(query) || b.casa.toLowerCase().includes(query));
       
-      if(!filtered.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px;">Nessun libro trovato.</td></tr>`; return; }
+      if(!filtered.length) { 
+        tbody.innerHTML = `<tr><td colspan="${isAdmin()?7:6}" style="text-align:center; padding:32px;">Nessun libro trovato.</td></tr>`; 
+        return; 
+      }
 
       tbody.innerHTML = filtered.map(b => {
         const isFav = favorites.some(f => f.titolo === b.titolo);
-        const badge = b.stato === 'Disponibile' ? `<span class="badge-status badge-disponibile">Disponibile</span>` : `<span class="badge-status badge-prestato">In Prestito</span>`;
+        const badge = b.stato === 'Disponibile' ? `<span class="badge-status badge-disponibile">Disponibile</span>` : `<span class="badge-status badge-prestato">Non disponibile</span>`;
+        let catTd = isAdmin() ? `<td>${b.catalogazione || '—'}</td>` : '';
         return `
           <tr>
+            ${catTd}
             <td style="font-weight:600;">${b.titolo}</td>
             <td>${b.autore}</td>
             <td>${b.casa}</td>
+            <td>${b.anno || '—'}</td>
             <td>${badge}</td>
-            <td style="text-align:center;"><button style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:${isFav?'var(--accent)':'var(--text-muted)'}" onclick="toggleFavorite('${b.titolo}')">${isFav?'♥':'♡'}</button></td>
+            <td style="text-align:center;"><button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:${isFav?'var(--accent)':'var(--text-muted)'}" onclick="toggleFavorite('${b.titolo.replace(/'/g, "\\'")}')">${isFav?'♥':'♡'}</button></td>
           </tr>
         `;
       }).join('');
+    }
+
+    function handleCatalogSearch() {
+      renderCatalog();
     }
 
     function toggleFavorite(titolo) {
@@ -650,6 +881,23 @@
       if(idx > -1) favorites.splice(idx, 1); else favorites.push(book);
       localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
       renderCatalog();
+      if(document.getElementById('view-preferiti').classList.contains('active')) renderFavorites();
+    }
+
+    function renderFavorites() {
+      const tbody = document.getElementById('favoritesTableBody');
+      if(!favorites.length) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 32px;">Nessun preferito salvato.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = favorites.map(b => `
+        <tr>
+          <td style="font-weight:600;">${b.titolo}</td>
+          <td>${b.autore}</td>
+          <td>${b.casa}</td>
+          <td style="text-align:center;"><button class="btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="toggleFavorite('${b.titolo.replace(/'/g, "\\'")}'); renderFavorites();">Rimuovi</button></td>
+        </tr>
+      `).join('');
     }
 
     function renderHomeEvidenza() {
@@ -658,48 +906,90 @@
       if(!evBooks.length) { container.innerHTML = `<p style="color:var(--text-secondary);">Nessun libro in evidenza per ora.</p>`; return; }
       container.innerHTML = evBooks.map(b => `
         <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:20px;">
-          <h4 style="margin-bottom:6px;">${b.titolo}</h4>
-          <p style="color:var(--text-secondary); font-size:0.85rem;">${b.autore} - ${b.casa}</p>
+          <h4 style="margin-bottom:6px; font-size:1.05rem;">${b.titolo}</h4>
+          <p style="color:var(--text-secondary); font-size:0.88rem;">${b.autore} - ${b.casa} (${b.anno})</p>
         </div>
       `).join('');
     }
 
-    // LOGIN & REGISTRATION
-    function handleLoginRegister() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const nickname = document.getElementById('loginNickname').value.trim();
-      const cellulare = document.getElementById('loginPhone').value.trim();
-      const pass = document.getElementById('loginPassword').value;
+    // ACCESSO E REGISTRAZIONE
+    function handleLogin() {
+      const identifier = document.getElementById('loginId').value.trim();
+      const pass = document.getElementById('loginPass').value;
 
-      if(!email || !nickname || !pass) { alert('Compila tutti i campi obbligatori.'); return; }
-      
-      if(readers.some(r => r.nickname === nickname && r.email !== email)) {
-        alert('Questo nickname è già occupato da un altro utente. Scegline un altro.');
-        return;
-      }
+      if(!identifier || !pass) { alert('Compila tutti i campi.'); return; }
 
-      currentUser = { email, nickname, cellulare };
+      const user = readers.find(r => (r.email === identifier || r.nickname === identifier || r.cellulare === identifier) && r.password === pass);
+      if(!user) { alert('Credenziali non valide.'); return; }
+
+      currentUser = { email: user.email, nickname: user.nickname, cellulare: user.cellulare, password: user.password };
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
-
-      let reader = readers.find(r => r.email === email);
-      if(!reader) {
-        readers.push({ nickname, email, cellulare, restituiti: 0 });
-      } else {
-        reader.nickname = nickname;
-        reader.cellulare = cellulare;
-      }
-      localStorage.setItem('biblio_readers', JSON.stringify(readers));
-
-      alert('Accesso effettuato con successo!');
+      alert('Accesso effettuato!');
       switchView('home');
     }
 
-    function simulateGoogleLogin() {
-      currentUser = { email: "utente.google@gmail.com", nickname: "GoogleUser", cellulare: "3339999999" };
-      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
-      if(!readers.some(r => r.email === currentUser.email)) readers.push({ nickname: currentUser.nickname, email: currentUser.email, cellulare: currentUser.cellulare, restituiti: 0 });
+    function handleRegister() {
+      const email = document.getElementById('regEmail').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const nickname = document.getElementById('regNickname').value.trim();
+      const pass = document.getElementById('regPass').value;
+
+      if(!email || !phone || !nickname || !pass) { alert('Compila tutti i campi.'); return; }
+      
+      if(readers.some(r => r.nickname.toLowerCase() === nickname.toLowerCase())) {
+        alert('Questo nickname è già occupato da un altro utente. Due user non possono avere lo stesso nickname.');
+        return;
+      }
+      if(readers.some(r => r.email === email)) {
+        alert('Esiste già un account registrato con questa email.');
+        return;
+      }
+
+      const newReader = { nickname, email, cellulare: phone, password: pass, adminNotes: "", returnedBooks: [], activeLoans: [] };
+      readers.push(newReader);
       localStorage.setItem('biblio_readers', JSON.stringify(readers));
+
+      currentUser = { email, nickname, cellulare: phone, password: pass };
+      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+
+      alert('Registrazione completata!');
+      switchView('home');
+    }
+
+    function googleLogin() {
+      let gEmail = "bibliotecacaltabellotta@gmail.com";
+      let user = readers.find(r => r.email === gEmail);
+      if(!user) {
+        user = { nickname: "BibliotecaCaltabellotta", email: gEmail, cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] };
+        readers.push(user);
+        localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      }
+      currentUser = { email: user.email, nickname: user.nickname, cellulare: user.cellulare, password: user.password };
+      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
       alert('Accesso con Google completato!');
+      switchView('home');
+    }
+
+    function googleRegister() {
+      let email = prompt("Inserisci la tua email Google per la registrazione:");
+      if(!email) return;
+      let user = readers.find(r => r.email === email);
+      if(user) {
+        alert('Account già esistente, effettua l\'accesso.');
+        switchAuthTab('accedi');
+        return;
+      }
+      let nickname = email.split('@')[0];
+      if(readers.some(r => r.nickname.toLowerCase() === nickname.toLowerCase())) {
+        nickname += Math.floor(Math.random() * 1000);
+      }
+      const newReader = { nickname, email, cellulare: "3330000000", password: "googlepassword", adminNotes: "", returnedBooks: [], activeLoans: [] };
+      readers.push(newReader);
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+
+      currentUser = { email, nickname, cellulare: "3330000000", password: "googlepassword" };
+      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+      alert('Registrazione con Google completata!');
       switchView('home');
     }
 
@@ -709,12 +999,60 @@
       switchView('home');
     }
 
+    function deleteAccount() {
+      if(confirm("Sei sicuro di voler eliminare definitivamente il tuo account e tutti i tuoi dati?")) {
+        readers = readers.filter(r => r.email !== currentUser.email);
+        localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        logoutUser();
+      }
+    }
+
     function renderProfile() {
       if(!currentUser) { switchView('accedi'); return; }
-      document.getElementById('profEmail').innerText = currentUser.email;
-      document.getElementById('profNickname').innerText = currentUser.nickname;
-      let r = readers.find(x => x.email === currentUser.email) || { restituiti: 0 };
-      document.getElementById('profBooksReturned').innerText = r.restituiti;
+      let reader = readers.find(r => r.email === currentUser.email) || currentUser;
+      
+      document.getElementById('profEmailInput').value = reader.email;
+      document.getElementById('profPhoneInput').value = reader.cellulare || '';
+      document.getElementById('profNickInput').value = reader.nickname || '';
+      document.getElementById('profPassInput').value = reader.password || '';
+
+      // Prestiti attivi dell'utente (assegnati ad email)
+      let active = allBooks.filter(b => b.assegnato === reader.email);
+      document.getElementById('profActiveLoansCount').innerText = active.length;
+      document.getElementById('profActiveLoansList').innerHTML = active.length ? active.map(b => `• <strong>${b.titolo}</strong> (${b.autore}) - Scadenza: ${b.rientro || 'N/D'}`).join('<br>') : 'Nessun prestito attivo.';
+
+      // Libri restituiti
+      let returned = reader.returnedBooks || [];
+      document.getElementById('profBooksReturnedCount').innerText = returned.length;
+      document.getElementById('profReturnedLoansList').innerHTML = returned.length ? returned.map(b => `• <strong>${b.titolo}</strong> (${b.autore})`).join('<br>') : 'Nessun libro restituito.';
+    }
+
+    function updateProfileData() {
+      let phone = document.getElementById('profPhoneInput').value.trim();
+      let nick = document.getElementById('profNickInput').value.trim();
+      let pass = document.getElementById('profPassInput').value;
+
+      if(!nick || !pass) { alert('Nickname e password non possono essere vuoti.'); return; }
+
+      if(readers.some(r => r.nickname.toLowerCase() === nick.toLowerCase() && r.email !== currentUser.email)) {
+        alert('Questo nickname è già occupato da un altro utente.');
+        return;
+      }
+
+      let reader = readers.find(r => r.email === currentUser.email);
+      if(reader) {
+        reader.cellulare = phone;
+        reader.nickname = nick;
+        reader.password = pass;
+        localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      }
+
+      currentUser.cellulare = phone;
+      currentUser.nickname = nick;
+      currentUser.password = pass;
+      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+      alert('Profilo aggiornato con successo!');
+      renderProfile();
     }
 
     function renderReaders() {
@@ -722,14 +1060,57 @@
       const tbody = document.getElementById('readersTableBody');
       const filtered = readers.filter(r => r.nickname.toLowerCase().includes(query));
       
-      tbody.innerHTML = filtered.map(r => `
-        <tr>
-          <td style="font-weight:600;">${r.nickname}</td>
-          <td>${r.email}</td>
-          <td>${r.cellulare || '—'}</td>
-          <td style="text-align:right;"><span style="background:var(--bg-main); padding:2px 10px; border-radius:12px; border:1px solid var(--border-color);">${r.restituiti}</span></td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = filtered.map(r => {
+        let returnedCount = (r.returnedBooks || []).length;
+        let adminBadge = (r.email === "bibliotecacaltabellotta@gmail.com") ? ' <span style="color:var(--accent);">★ [Admin]</span>' : '';
+        
+        let clickAction = isAdmin() ? `onclick="openUserCard('${r.email}')" style="cursor:pointer; color:var(--text-primary); font-weight:600;"` : `style="font-weight:600;"`;
+
+        return `
+          <tr>
+            <td><span ${clickAction}>${r.nickname}${adminBadge}</span></td>
+            <td style="text-align:right;"><span style="background:var(--bg-main); padding:3px 12px; border-radius:12px; border:1px solid var(--border-color);">${returnedCount}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    let viewingReaderEmail = null;
+    function openUserCard(email) {
+      if(!isAdmin()) return;
+      viewingReaderEmail = email;
+      let r = readers.find(x => x.email === email);
+      if(!r) return;
+
+      document.getElementById('schedaTitle').innerText = `Scheda Utente: ${r.nickname}`;
+      document.getElementById('schEmail').innerText = r.email;
+      document.getElementById('schPhone').innerText = r.cellulare || '—';
+      document.getElementById('schNick').innerText = r.nickname;
+
+      let ret = r.returnedBooks || [];
+      document.getElementById('schRetCount').innerText = ret.length;
+      document.getElementById('schRetList').innerHTML = ret.length ? ret.map(b => `• ${b.titolo} (${b.autore})`).join('<br>') : 'Nessun libro restituito.';
+
+      let act = allBooks.filter(b => b.assegnato === r.email);
+      document.getElementById('schActCount').innerText = act.length;
+      document.getElementById('schActList').innerHTML = act.length ? act.map(b => `• ${b.titolo} (Scadenza: ${b.rientro || 'N/D'})`).join('<br>') : 'Nessun prestito attivo.';
+
+      let userFavs = favorites; // o preferiti salvati
+      document.getElementById('schFavList').innerHTML = userFavs.length ? userFavs.map(b => `• ${b.titolo}`).join('<br>') : 'Nessun preferito.';
+
+      document.getElementById('schAdminNotes').value = r.adminNotes || '';
+      switchView('scheda-utente');
+    }
+
+    function saveAdminNotes() {
+      if(!isAdmin() || !viewingReaderEmail) return;
+      let notes = document.getElementById('schAdminNotes').value;
+      let r = readers.find(x => x.email === viewingReaderEmail);
+      if(r) {
+        r.adminNotes = notes;
+        localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        alert('Note salvate con successo!');
+      }
     }
 
     // ADMIN GESTIONE
@@ -745,57 +1126,85 @@
 
     function renderAdminPrestiti() {
       const tbody = document.getElementById('adminPrestitiBody');
-      tbody.innerHTML = allBooks.map((b, idx) => `
-        <tr>
-          <td>${b.titolo}</td>
-          <td><span class="badge-status ${b.stato==='Disponibile'?'badge-disponibile':'badge-prestato'}">${b.stato}</span></td>
-          <td><input type="email" id="assign_email_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.assegnato||''}" placeholder="email utente"></td>
-          <td><input type="date" id="assign_date_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.rientro||''}"></td>
-          <td>
-            ${b.stato==='Disponibile' ? 
-              `<button class="btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="setBookPrestito(${idx}, true)">Metti Prestito</button>` : 
-              `<button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="setBookPrestito(${idx}, false)">Registra Restituzione</button>`}
-          </td>
-        </tr>
-      `).join('');
+      const readerEmails = readers.map(r => r.email);
+
+      tbody.innerHTML = allBooks.map((b, idx) => {
+        let isDisp = b.stato === 'Disponibile';
+        return `
+          <tr>
+            <td><strong>${b.titolo}</strong><br><small style="color:var(--text-secondary)">${b.autore}</small></td>
+            <td><span class="badge-status ${isDisp?'badge-disponibile':'badge-prestato'}">${b.stato}</span></td>
+            <td>
+              <input type="text" id="assign_target_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.assegnato||''}" placeholder="Email utente o 'user fantasma'">
+            </td>
+            <td><input type="date" id="date_prestito_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.dataPrestito||''}"></td>
+            <td><input type="date" id="date_rientro_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.rientro||''}"></td>
+            <td>
+              <div style="margin-bottom:6px;"><input type="text" id="note_prestito_${idx}" class="form-input" style="padding:4px; font-size:0.8rem;" value="${b.notePrestito||''}" placeholder="Note prestito..."></div>
+              ${isDisp ? 
+                `<button class="btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="setPrestito(${idx}, 'Non disponibile')">Assegna</button>` : 
+                `<button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="setPrestito(${idx}, 'Disponibile')">Registra Rientro</button>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
-    function setBookPrestito(idx, isPrestito) {
-      const emailInput = document.getElementById(`assign_email_${idx}`).value.trim();
-      const dateInput = document.getElementById(`assign_date_${idx}`).value;
-      
-      if(isPrestito && !emailInput) { alert('Inserisci la mail dell\'utente a cui assegnare il libro.'); return; }
+    function setPrestito(idx, nuovoStato) {
+      const target = document.getElementById(`assign_target_${idx}`).value.trim();
+      const dataP = document.getElementById(`date_prestito_${idx}`).value;
+      const dataR = document.getElementById(`date_rientro_${idx}`).value;
+      const note = document.getElementById(`note_prestito_${idx}`).value;
 
-      allBooks[idx].stato = isPrestito ? 'In Prestito' : 'Disponibile';
-      allBooks[idx].assegnato = isPrestito ? emailInput : '';
-      allBooks[idx].rientro = isPrestito ? dateInput : '';
-
-      if(!isPrestito && emailInput) {
-        let reader = readers.find(r => r.email === emailInput);
-        if(reader) { reader.restituiti = (reader.restituiti || 0) + 1; }
+      if(nuovoStato === 'Non disponibile' && !target) {
+        alert('Inserisci a chi è assegnato il libro (email utente o user fantasma).');
+        return;
       }
 
+      let libro = allBooks[idx];
+      let vecchioAssegnatario = libro.assegnato;
+
+      if(nuovoStato === 'Disponibile' && vecchioAssegnatario) {
+        // Registra restituzione nello storico dell'utente se è una mail registrata
+        let r = readers.find(x => x.email === vecchioAssegnatario);
+        if(r) {
+          if(!r.returnedBooks) r.returnedBooks = [];
+          r.returnedBooks.push({ titolo: libro.titolo, autore: libro.autore });
+        }
+        libro.assegnato = '';
+        libro.dataPrestito = '';
+        libro.rientro = '';
+        libro.notePrestito = '';
+      } else {
+        libro.assegnato = target;
+        libro.dataPrestito = dataP;
+        libro.rientro = dataR;
+        libro.notePrestito = note;
+      }
+
+      libro.stato = nuovoStato;
       localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       localStorage.setItem('biblio_readers', JSON.stringify(readers));
       renderAdminPrestiti();
-      alert('Stato aggiornato con successo!');
+      alert('Stato prestito aggiornato!');
     }
 
-    function adminAddNewReader() {
-      const email = document.getElementById('newReaderEmail').value.trim();
-      const nickname = document.getElementById('newReaderNick').value.trim();
-      if(!email || !nickname) { alert('Inserisci email e nickname.'); return; }
-      if(readers.some(r => r.nickname === nickname)) { alert('Nickname già esistente.'); return; }
-      readers.push({ nickname, email, cellulare: '', restituiti: 0 });
-      localStorage.setItem('biblio_readers', JSON.stringify(readers));
-      alert('Lettore aggiunto con successo!');
+    function sendInviteEmail() {
+      const email = document.getElementById('inviteEmail').value.trim();
+      if(!email) { alert('Inserisci un indirizzo email.'); return; }
+      const linkReg = window.location.href.split('#')[0] + "?email=" + encodeURIComponent(email);
+      alert(`Simulazione invio email automatica da bibliotecacaltabellotta@gmail.com a ${email}:\n\n"Ciao! Sei invitato/a nella Biblioteca di Caltabellotta. Registrati qui: ${linkReg}"`);
+      document.getElementById('inviteEmail').value = '';
     }
 
     function renderAdminEvidenzaChecklist() {
+      const query = (document.getElementById('evidenzaSearch')?.value || '').toLowerCase();
       const container = document.getElementById('adminEvidenzaChecklist');
-      container.innerHTML = allBooks.map(b => `
+      const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(query) || b.autore.toLowerCase().includes(query));
+
+      container.innerHTML = filtered.map(b => `
         <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.9rem; cursor:pointer;">
-          <input type="checkbox" value="${b.titolo}" ${evidenzaList.includes(b.titolo)?'checked':''} class="ev-chk"> ${b.titolo}
+          <input type="checkbox" value="${b.titolo}" ${evidenzaList.includes(b.titolo)?'checked':''} class="ev-chk"> ${b.titolo} (${b.autore})
         </label>
       `).join('');
     }
@@ -807,18 +1216,50 @@
       renderHomeEvidenza();
     }
 
+    function loadConfigToAdmin() {
+      document.getElementById('cfgTitle').value = siteConfig.title;
+      document.getElementById('cfgDesc').value = siteConfig.desc;
+      document.getElementById('cfgHeroImg').value = siteConfig.heroImg;
+      document.getElementById('cfgTitleColor').value = siteConfig.titleColor || '#f5f2ed';
+      document.getElementById('cfgWordColor').value = siteConfig.wordColor || '#a83226';
+      document.getElementById('cfgTitleFont').value = siteConfig.titleFont || "'Lora', Georgia, serif";
+      document.getElementById('cfgWordFont').value = siteConfig.wordFont || "'Lora', Georgia, serif";
+      document.getElementById('cfgAccent').value = siteConfig.accent;
+      document.getElementById('cfgAddress').value = siteConfig.address || '';
+      document.getElementById('cfgPhone').value = siteConfig.phone || '';
+      document.getElementById('cfgHours').value = siteConfig.hours || '';
+      document.getElementById('cfgEmail').value = siteConfig.email || '';
+    }
+
     function saveSiteConfig() {
-      siteConfig.accent = document.getElementById('cfgAccent').value;
       siteConfig.title = document.getElementById('cfgTitle').value;
+      siteConfig.desc = document.getElementById('cfgDesc').value;
       siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
+      siteConfig.titleColor = document.getElementById('cfgTitleColor').value;
+      siteConfig.wordColor = document.getElementById('cfgWordColor').value;
+      siteConfig.titleFont = document.getElementById('cfgTitleFont').value;
+      siteConfig.wordFont = document.getElementById('cfgWordFont').value;
+      siteConfig.accent = document.getElementById('cfgAccent').value;
       siteConfig.address = document.getElementById('cfgAddress').value;
       siteConfig.phone = document.getElementById('cfgPhone').value;
+      siteConfig.hours = document.getElementById('cfgHours').value;
+      siteConfig.email = document.getElementById('cfgEmail').value;
+
       localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
       initSiteConfig();
-      alert('Personalizzazioni salvate!');
+      alert('Personalizzazioni salvate con successo!');
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      // Controllo se c'è un parametro email nell'URL (da link invito)
+      const urlParams = new URLSearchParams(window.location.search);
+      const inviteEmail = urlParams.get('email');
+      if(inviteEmail) {
+        switchView('accedi');
+        switchAuthTab('registra');
+        document.getElementById('regEmail').value = inviteEmail;
+      }
+
       initSiteConfig();
       renderNavbar();
       loadBooks();
