@@ -925,21 +925,18 @@
       if(!evBooks.length) { container.innerHTML = `<p style="color:var(--text-secondary);">Nessun libro in evidenza per ora.</p>`; return; }
       
       container.innerHTML = evBooks.map(b => {
-        const isFav = favorites.some(f => f.titolo === b.titolo);
-        const statusBadge = b.stato === 'Disponibile' 
+        const liveBook = allBooks.find(item => item.titolo === b.titolo) || b;
+        const isFav = favorites.some(f => f.titolo === liveBook.titolo);
+        const isDisp = liveBook.stato === 'Disponibile';
+        const statusBadge = isDisp 
           ? `<span class="badge-status badge-disponibile" style="display:inline-block; margin-top:8px;">Disponibile</span>` 
           : `<span class="badge-status badge-prestato" style="display:inline-block; margin-top:8px;">Non disponibile</span>`;
         
-        let favButton = '';
-        if(currentUser) {
-          favButton = `<button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:${isFav?'var(--accent)':'var(--text-muted)'}; float:right;" onclick="toggleFavorite('${b.titolo.replace(/'/g, "\\'")}')">${isFav?'♥':'♡'}</button>`;
-        }
-
         return `
           <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:20px; position:relative;">
-            ${favButton}
-            <h4 style="margin-bottom:6px; font-size:1.05rem; padding-right:24px;">${b.titolo}</h4>
-            <p style="color:var(--text-secondary); font-size:0.88rem;">${b.autore} - ${b.casa} (${b.anno})</p>
+            <button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:${isFav?'var(--accent)':'var(--text-muted)'}; float:right;" onclick="toggleFavorite('${liveBook.titolo.replace(/'/g, "\\'")}')">${isFav?'♥':'♡'}</button>
+            <h4 style="margin-bottom:6px; font-size:1.05rem; padding-right:24px;">${liveBook.titolo}</h4>
+            <p style="color:var(--text-secondary); font-size:0.88rem;">${liveBook.autore} - ${liveBook.casa} (${liveBook.anno})</p>
             <div>${statusBadge}</div>
           </div>
         `;
@@ -991,12 +988,14 @@
     }
 
     function googleLogin() {
-      let gEmail = "bibliotecacaltabellotta@gmail.com";
-      let user = readers.find(r => r.email === gEmail);
+      let email = prompt("Inserisci la tua email Google per effettuare l'accesso:");
+      if(!email) return;
+      let user = readers.find(r => r.email.toLowerCase() === email.toLowerCase());
       if(!user) {
-        user = { nickname: "BibliotecaCaltabellotta", email: gEmail, cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] };
-        readers.push(user);
-        localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        alert('Nessun account trovato con questa email. Effettua prima la registrazione.');
+        switchAuthTab('registra');
+        document.getElementById('regEmail').value = email;
+        return;
       }
       currentUser = { email: user.email, nickname: user.nickname, cellulare: user.cellulare, password: user.password };
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
@@ -1007,10 +1006,11 @@
     function googleRegister() {
       let email = prompt("Inserisci la tua email Google per la registrazione:");
       if(!email) return;
-      let user = readers.find(r => r.email === email);
+      let user = readers.find(r => r.email.toLowerCase() === email.toLowerCase());
       if(user) {
-        alert('Account già esistente, effettua l\'accesso.');
+        alert('Account già esistente con questa email, effettua l\'accesso.');
         switchAuthTab('accedi');
+        document.getElementById('loginId').value = email;
         return;
       }
       let nickname = email.split('@')[0];
@@ -1232,7 +1232,6 @@
       const linkReg = window.location.href.split('#')[0] + "?email=" + encodeURIComponent(email);
       const subject = encodeURIComponent("Invito alla registrazione alla Biblioteca di Caltabellotta");
       
-      // Corpo del messaggio con il link incorporato nella parola "qui"
       const bodyText = `Carissim* lettore/lettrice,
 siamo davvero entusiasti di invitarti a registrarti al nostro sito ufficiale, dove potrai consultare tutto quello che può servirti sui nostri libri!
 Clicca qui (${linkReg}) per essere reindirizzato direttamente alla pagina di registrazione; in pochi click sarai dentro!
@@ -1241,7 +1240,7 @@ La tua Biblioteca preferita.`;
 
       const body = encodeURIComponent(bodyText);
       
-      // Apre il client mail predefinito simulando l'invio dall'account admin
+      // Apertura diretta del client email (Outlook/Mail) con mittente predefinito admin
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
       
       document.getElementById('inviteEmail').value = '';
