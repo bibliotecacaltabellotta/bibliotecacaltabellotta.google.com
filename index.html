@@ -674,10 +674,11 @@
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
     let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
     
-    let readers = [
+    let defaultReaders = [
       { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] },
       { nickname: "MarioRossi", email: "mario@example.com", cellulare: "3331111111", password: "password", adminNotes: "", returnedBooks: [], activeLoans: [] }
     ];
+    let readers = defaultReaders;
 
     let evidenzaList = [];
     let siteConfig = { 
@@ -764,7 +765,8 @@
 
     function switchView(viewName) {
       document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-      document.getElementById('view-' + viewName).classList.add('active');
+      const target = document.getElementById('view-' + viewName);
+      if(target) target.classList.add('active');
       renderNavbar();
       if(viewName === 'catalogo') renderCatalog();
       if(viewName === 'preferiti') renderFavorites();
@@ -776,6 +778,7 @@
 
     function renderNavbar() {
       const nav = document.getElementById('navLinksContainer');
+      if(!nav) return;
       let html = `
         <button onclick="switchView('home')">Home</button>
         <button onclick="switchView('catalogo')">Catalogo</button>
@@ -872,6 +875,7 @@
       renderCatalog();
       renderHomeEvidenza();
       initSiteConfig();
+      renderNavbar();
     }
 
     function renderCatalog() {
@@ -879,13 +883,14 @@
       const tbody = document.getElementById('catalogTableBody');
       const thCat = document.getElementById('thCatalogCat');
       const thCm = document.getElementById('thCatalogCm');
+      if(!tbody) return;
       
       if(isAdmin()) {
-        thCat.style.display = 'table-cell';
-        thCm.style.display = 'table-cell';
+        if(thCat) thCat.style.display = 'table-cell';
+        if(thCm) thCm.style.display = 'table-cell';
       } else {
-        thCat.style.display = 'none';
-        thCm.style.display = 'none';
+        if(thCat) thCat.style.display = 'none';
+        if(thCm) thCm.style.display = 'none';
       }
 
       const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(query) || b.autore.toLowerCase().includes(query) || b.casa.toLowerCase().includes(query));
@@ -933,6 +938,7 @@
 
     function renderFavorites() {
       const tbody = document.getElementById('favoritesTableBody');
+      if(!tbody) return;
       if(!favorites.length) {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 24px;">Nessun preferito salvato.</td></tr>`;
         return;
@@ -958,6 +964,7 @@
 
     function renderHomeEvidenza() {
       const container = document.getElementById('homeEvidenzaContainer');
+      if(!container) return;
       const evBooks = allBooks.filter(b => evidenzaList.includes(b.titolo));
       if(!evBooks.length) { container.innerHTML = `<p style="color:var(--text-secondary);">Nessun libro in evidenza per ora.</p>`; return; }
       
@@ -1126,6 +1133,7 @@
     function renderReaders() {
       const query = (document.getElementById('searchReaderInput')?.value || '').toLowerCase();
       const tbody = document.getElementById('readersTableBody');
+      if(!tbody) return;
       const filtered = readers.filter(r => r.nickname.toLowerCase().includes(query));
       
       tbody.innerHTML = filtered.map(r => {
@@ -1182,16 +1190,20 @@
 
     function switchAdminTab(tab) {
       ['Prestiti','Lettori','Evidenza','Sito'].forEach(t => {
-        document.getElementById('admin'+t).style.display = (t.toLowerCase() === tab) ? 'block' : 'none';
-        document.getElementById('admTab'+t).classList.remove('active-tab');
+        const el = document.getElementById('admin'+t);
+        const btn = document.getElementById('admTab'+t);
+        if(el) el.style.display = (t.toLowerCase() === tab) ? 'block' : 'none';
+        if(btn) btn.classList.remove('active-tab');
       });
-      document.getElementById('admTab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active-tab');
+      const activeBtn = document.getElementById('admTab'+tab.charAt(0).toUpperCase()+tab.slice(1));
+      if(activeBtn) activeBtn.classList.add('active-tab');
       if(tab === 'prestiti') renderAdminPrestiti();
       if(tab === 'evidenza') renderAdminEvidenzaChecklist();
     }
 
     function renderAdminPrestiti() {
       const tbody = document.getElementById('adminPrestitiBody');
+      if(!tbody) return;
       const searchVal = (document.getElementById('adminPrestitiSearch')?.value || '').toLowerCase();
       const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(searchVal) || b.autore.toLowerCase().includes(searchVal));
 
@@ -1236,7 +1248,7 @@
         let r = readers.find(x => x.email === vecchioAssegnatario);
         if(r) {
           if(!r.returnedBooks) r.returnedBooks = [];
-          r.returnedBooks.push({ titolo: libro.titolo, autore: livre.autore || libro.autore });
+          r.returnedBooks.push({ titolo: libro.titolo, autore: libro.autore });
         }
         libro.assegnato = '';
         libro.dataPrestito = '';
@@ -1269,6 +1281,7 @@
     function renderAdminEvidenzaChecklist() {
       const query = (document.getElementById('evidenzaSearch')?.value || '').toLowerCase();
       const container = document.getElementById('adminEvidenzaChecklist');
+      if(!container) return;
       const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(query) || b.autore.toLowerCase().includes(query));
 
       container.innerHTML = filtered.map(b => `
@@ -1286,14 +1299,14 @@
     }
 
     function loadConfigToAdmin() {
-      document.getElementById('cfgTitle').value = siteConfig.title;
-      document.getElementById('cfgDesc').value = siteConfig.desc;
-      document.getElementById('cfgHeroImg').value = siteConfig.heroImg;
+      document.getElementById('cfgTitle').value = siteConfig.title || '';
+      document.getElementById('cfgDesc').value = siteConfig.desc || '';
+      document.getElementById('cfgHeroImg').value = siteConfig.heroImg || '';
       document.getElementById('cfgTitleColor').value = siteConfig.titleColor || '#f5f2ed';
       document.getElementById('cfgWordColor').value = siteConfig.wordColor || '#a83226';
       document.getElementById('cfgTitleFont').value = siteConfig.titleFont || "'Lora', Georgia, serif";
       document.getElementById('cfgWordFont').value = siteConfig.wordFont || "'Lora', Georgia, serif";
-      document.getElementById('cfgAccent').value = siteConfig.accent;
+      document.getElementById('cfgAccent').value = siteConfig.accent || '#a83226';
       document.getElementById('cfgAddress').value = siteConfig.address || '';
       document.getElementById('cfgPhone').value = siteConfig.phone || '';
       document.getElementById('cfgHours').value = siteConfig.hours || '';
@@ -1302,7 +1315,7 @@
 
     function saveSiteConfig() {
       siteConfig.title = document.getElementById('cfgTitle').value;
-      siteConfig.desc = document.getElementById('cfgDesc'].value;
+      siteConfig.desc = document.getElementById('cfgDesc').value;
       siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
       siteConfig.titleColor = document.getElementById('cfgTitleColor').value;
       siteConfig.wordColor = document.getElementById('cfgWordColor').value;
@@ -1310,7 +1323,7 @@
       siteConfig.wordFont = document.getElementById('cfgWordFont').value;
       siteConfig.accent = document.getElementById('cfgAccent').value;
       siteConfig.address = document.getElementById('cfgAddress').value;
-      siteConfig.phone = document.getElementById('cfgPhone').value;
+      siteConfig.phone = document.getElementById('cfgPhone'].value;
       siteConfig.hours = document.getElementById('cfgHours').value;
       siteConfig.email = document.getElementById('cfgEmail').value;
 
@@ -1325,11 +1338,12 @@
       if(inviteEmail) {
         switchView('accedi');
         switchAuthTab('registra');
-        document.getElementById('regEmail').value = inviteEmail;
+        const regInput = document.getElementById('regEmail');
+        if(regInput) regInput.value = inviteEmail;
       }
 
-      loadBooks().then(() => {
-        initSiteConfig();
+      loadBooks().catch(err => {
+        console.error("Errore inizializzazione:", err);
         renderNavbar();
       });
     });
