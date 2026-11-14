@@ -255,9 +255,6 @@
       margin-top: auto;
     }
     .footer-container { max-width: 1180px; margin: 0 auto; }
-    .footer-top { display: flex; gap: 64px; flex-wrap: wrap; padding-bottom: 36px; border-bottom: 1px solid var(--border-color); }
-    .footer-col h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; }
-    .footer-col p { font-size: 0.88rem; color: var(--text-secondary); }
     .footer-bottom { padding-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: var(--text-secondary); }
   </style>
 </head>
@@ -278,7 +275,6 @@
   </header>
 
   <main>
-    <!-- HOME -->
     <section id="view-home" class="view-section active">
       <div class="hero-top-label">BIBLIOTECA COMUNALE · CALTABELLOTTA</div>
       <h1 class="hero-title">
@@ -298,7 +294,6 @@
       </div>
     </section>
 
-    <!-- CATALOGO -->
     <section id="view-catalogo" class="view-section">
       <div class="page-header" style="margin-bottom: 24px;">
         <h1>Catalogo</h1>
@@ -328,7 +323,6 @@
       </div>
     </section>
 
-    <!-- ACCEDI / REGISTRAZIONE -->
     <section id="view-accedi" class="view-section">
       <div class="auth-card">
         <div class="auth-tabs">
@@ -354,11 +348,8 @@
       </div>
     </section>
 
-    <!-- PREFERITI -->
     <section id="view-preferiti" class="view-section">
-      <div class="page-header">
-        <h1>I miei preferiti</h1>
-      </div>
+      <div class="page-header"><h1>I miei preferiti</h1></div>
       <div class="table-container">
         <table>
           <thead>
@@ -371,7 +362,6 @@
       </div>
     </section>
 
-    <!-- PROFILO -->
     <section id="view-profilo" class="view-section">
       <div class="page-header"><h1>Profilo</h1></div>
       <div class="auth-card" style="margin: 0; text-align: left; max-width: 600px;">
@@ -384,7 +374,6 @@
       </div>
     </section>
 
-    <!-- LETTORI -->
     <section id="view-lettori" class="view-section">
       <div class="page-header"><h1>I lettori</h1></div>
       <div style="margin-bottom: 20px;"><input type="text" id="searchReaderInput" class="form-input" style="max-width: 300px;" placeholder="Cerca username..." oninput="renderReaders()"></div>
@@ -396,25 +385,14 @@
       </div>
     </section>
 
-    <!-- GESTIONE (ADMIN) -->
     <section id="view-gestione" class="view-section">
       <div class="page-header"><h1>Gestione Amministrativa</h1></div>
       <div style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
-        <button class="btn-secondary active-tab" onclick="switchAdminTab('prestiti')" id="admTabPrestiti">Prestiti</button>
-        <button class="btn-secondary" onclick="switchAdminTab('evidenza')" id="admTabEvidenza">In Evidenza</button>
+        <button class="btn-secondary active-tab" onclick="switchAdminTab('evidenza')" id="admTabEvidenza">In Evidenza</button>
         <button class="btn-secondary" onclick="switchAdminTab('sito')" id="admTabSito">Personalizza Sito</button>
       </div>
 
-      <div id="adminPrestiti" class="admin-panel">
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Titolo Libro</th><th>Stato</th><th>Assegnato a</th><th>Rientro</th><th>Azione</th></tr></thead>
-            <tbody id="adminPrestitiBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="adminEvidenza" class="admin-panel" style="display:none;">
+      <div id="adminEvidenza" class="admin-panel">
         <div class="auth-card" style="margin: 0; text-align: left; max-width: 700px;">
           <h3>Gestisci Libri in Evidenza</h3>
           <div id="adminEvidenzaChecklist" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;"></div>
@@ -442,16 +420,10 @@
   </footer>
 
   <script>
-    // INSERISCI QUI I TUOI DATI DI JSONBIN.IO
     const JSONBIN_BIN_ID = "6af7b070ffd5d16053bfdf79"; 
-    const JSONBIN_API_KEY = "$2a$10$NOCN6n8OLlk8UqTt1A.P9.A/UWIfbIcYDNXDCGv2.DO3fst4eNBym";
+    const JSONBIN_API_KEY = "$2a$10$NOCN6n8OLlk8UqTt1A.P9.A/UWIfbIcYDNXDCGv2.DO3fst4eNBym"; // Sostituisci con la tua chiave se serve
 
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
-
-    const FALLBACK_BOOKS = [
-      { catalogazione: "001", titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori", anno: "1982", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "" },
-      { catalogazione: "002", titolo: "25 agosto 1983 ed altri racconti inediti", autore: "Borges Jorge Luis", casa: "Ricci Franco Maria Ed", anno: "1990", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "" }
-    ];
 
     let allBooks = [];
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
@@ -467,8 +439,7 @@
       return currentUser.email === "bibliotecacaltabellotta@gmail.com" || currentUser.cellulare === "3330000000" || currentUser.nickname.toLowerCase() === "bibliotecacaltabellotta";
     }
 
-    async function fetchGlobalState() {
-      if (JSONBIN_BIN_ID === "IL_TUO_BIN_ID_QUI") return;
+    async function fetchGlobalState(silent = false) {
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
           headers: { 'X-Master-Key': JSONBIN_API_KEY }
@@ -481,16 +452,17 @@
             if(data.evidenza) evidenzaList = data.evidenza;
             if(data.config) siteConfig = { ...siteConfig, ...data.config };
             if(data.readers) readers = data.readers;
+            if(!silent) {
+              renderCatalog();
+              renderHomeEvidenza();
+              initSiteConfig();
+            }
           }
         }
-      } catch(e) { console.log("Errore caricamento remoto"); }
+      } catch(e) {}
     }
 
     async function saveGlobalState() {
-      if (JSONBIN_BIN_ID === "IL_TUO_BIN_ID_QUI") {
-        alert("Inserisci il Bin ID di JSONBin nello script!");
-        return;
-      }
       const payload = { books: allBooks, evidenza: evidenzaList, config: siteConfig, readers: readers };
       try {
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
@@ -501,7 +473,12 @@
           },
           body: JSON.stringify(payload)
         });
-      } catch(e) { console.error("Errore salvataggio:", e); }
+      } catch(e) {}
+    }
+
+    function initSiteConfig() {
+      if(siteConfig.title) document.getElementById('heroMainText').innerText = siteConfig.title;
+      if(siteConfig.accent) document.documentElement.style.setProperty('--accent', siteConfig.accent);
     }
 
     function switchView(viewName) {
@@ -513,7 +490,7 @@
       if(viewName === 'preferiti') renderFavorites();
       if(viewName === 'profilo') renderProfile();
       if(viewName === 'lettori') renderReaders();
-      if(viewName === 'gestione') { renderAdminPrestiti(); loadConfigToAdmin(); }
+      if(viewName === 'gestione') { renderAdminEvidenzaChecklist(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -554,7 +531,7 @@
     }
 
     async function loadBooks() {
-      await fetchGlobalState();
+      await fetchGlobalState(false);
       if (allBooks.length === 0 && GOOGLE_SHEET_CSV_URL) {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
@@ -572,7 +549,6 @@
           }));
         } catch(e) {}
       }
-      if(allBooks.length === 0) allBooks = FALLBACK_BOOKS;
       renderCatalog();
       renderHomeEvidenza();
       renderNavbar();
@@ -668,13 +644,6 @@
 
     function logoutUser() { currentUser = null; localStorage.removeItem('biblio_current_user'); switchView('home'); }
 
-    function switchAdminTab(tab) {
-      ['Prestiti','Evidenza','Sito'].forEach(t => {
-        document.getElementById('admin'+t).style.display = (t.toLowerCase() === tab) ? 'block' : 'none';
-      });
-      if(tab === 'evidenza') renderAdminEvidenzaChecklist();
-    }
-
     function renderAdminEvidenzaChecklist() {
       const container = document.getElementById('adminEvidenzaChecklist');
       if(!container) return;
@@ -694,10 +663,13 @@
       siteConfig.title = document.getElementById('cfgTitle').value;
       saveGlobalState();
       alert('Salvato!');
+      initSiteConfig();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      loadBooks().catch(() => renderNavbar());
+      loadBooks();
+      // Aggiornamento automatico ogni 5 secondi per la sincronizzazione real-time
+      setInterval(() => { fetchGlobalState(true); }, 5000);
     });
   </script>
 </body>
