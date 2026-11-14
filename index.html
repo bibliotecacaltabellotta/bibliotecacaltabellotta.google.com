@@ -662,8 +662,6 @@
 
   <script>
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
-    
-    // URL dell'App Web Google Apps Script collegata al tuo Google Sheet
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKKqWew_s8Jwsr7b-xzXlKY8-R8n1T075Zdwr4q2x-Gebo-4v3rVNXzLRZcmRpSSyL/exec";
 
     const FALLBACK_BOOKS = [
@@ -703,7 +701,6 @@
       return currentUser.email === "bibliotecacaltabellotta@gmail.com" || currentUser.cellulare === "3330000000" || currentUser.nickname.toLowerCase() === "bibliotecacaltabellotta";
     }
 
-    // Sincronizzazione con Google Sheets (Database remoto)
     async function fetchGlobalState() {
       try {
         const res = await fetch(APPS_SCRIPT_URL);
@@ -717,7 +714,7 @@
           }
         }
       } catch(e) {
-        console.log("Impossibile caricare dallo Sheet, uso default o CSV.");
+        console.log("Errore caricamento remoto, uso dati locali.");
       }
     }
 
@@ -732,12 +729,11 @@
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: "POST",
-          mode: "no-cors",
           headers: { "Content-Type": "text/plain" },
           body: JSON.stringify(payload)
         });
       } catch(e) {
-        console.error("Errore nel salvataggio su Google Sheets:", e);
+        console.error("Errore nel salvataggio remoto:", e);
       }
     }
 
@@ -842,10 +838,8 @@
     }
 
     async function loadBooks() {
-      // 1. Prima carichiamo lo stato globale salvato su Google Sheets
       await fetchGlobalState();
 
-      // 2. Se non ci sono libri salvati nello Sheet, li carichiamo dal CSV originale
       if (allBooks.length === 0 && GOOGLE_SHEET_CSV_URL) {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
@@ -986,7 +980,6 @@
       }).join('');
     }
 
-    // ACCESSO E REGISTRAZIONE
     function handleLogin() {
       const identifier = document.getElementById('loginId').value.trim();
       const pass = document.getElementById('loginPass').value;
@@ -1011,7 +1004,7 @@
       if(!email || !phone || !nickname || !pass) { alert('Compila tutti i campi.'); return; }
       
       if(readers.some(r => r.nickname.toLowerCase() === nickname.toLowerCase())) {
-        alert('Questo nickname è già occupato da un altro utente. Due user non possono avere lo stesso nickname.');
+        alert('Questo nickname è già occupato da un altro utente.');
         return;
       }
       if(readers.some(r => r.email === email)) {
@@ -1077,7 +1070,7 @@
     }
 
     function deleteAccount() {
-      if(confirm("Sei sicuro di voler eliminare definitivamente il tuo account e tutti i tuoi dati?")) {
+      if(confirm("Sei sicuro di voler eliminare definitivamente il tuo account?")) {
         readers = readers.filter(r => r.email !== currentUser.email);
         saveGlobalState();
         logoutUser();
@@ -1187,7 +1180,6 @@
       }
     }
 
-    // ADMIN GESTIONE
     function switchAdminTab(tab) {
       ['Prestiti','Lettori','Evidenza','Sito'].forEach(t => {
         document.getElementById('admin'+t).style.display = (t.toLowerCase() === tab) ? 'block' : 'none';
@@ -1201,7 +1193,6 @@
     function renderAdminPrestiti() {
       const tbody = document.getElementById('adminPrestitiBody');
       const searchVal = (document.getElementById('adminPrestitiSearch')?.value || '').toLowerCase();
-      
       const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(searchVal) || b.autore.toLowerCase().includes(searchVal));
 
       tbody.innerHTML = filtered.map((b) => {
@@ -1234,7 +1225,7 @@
       const note = document.getElementById(`note_prestito_${idx}`).value;
 
       if(nuovoStato === 'Non disponibile' && !target) {
-        alert('Inserisci a chi è assegnato il libro (email utente o user fantasma).');
+        alert('Inserisci a chi è assegnato il libro.');
         return;
       }
 
@@ -1245,7 +1236,7 @@
         let r = readers.find(x => x.email === vecchioAssegnatario);
         if(r) {
           if(!r.returnedBooks) r.returnedBooks = [];
-          r.returnedBooks.push({ titolo: libro.titolo, autore: libro.autore });
+          r.returnedBooks.push({ titolo: libro.titolo, autore: livre.autore || libro.autore });
         }
         libro.assegnato = '';
         libro.dataPrestito = '';
@@ -1263,26 +1254,16 @@
       renderAdminPrestiti();
       renderCatalog();
       renderHomeEvidenza();
-      if(document.getElementById('view-preferiti').classList.contains('active')) renderFavorites();
-      alert('Stato prestito aggiornato e sincronizzato con successo!');
+      alert('Stato prestito aggiornato e sincronizzato!');
     }
 
     function sendInviteEmail() {
       const email = document.getElementById('inviteEmail').value.trim();
       if(!email) { alert('Inserisci un indirizzo email.'); return; }
-      
       const linkReg = window.location.href.split('#')[0] + "?email=" + encodeURIComponent(email);
       const subject = encodeURIComponent("Invito alla registrazione alla Biblioteca di Caltabellotta");
-      
-      const bodyText = `Carissim* lettore/lettrice,
-siamo davvero entusiasti di invitarti a registrarti al nostro sito ufficiale, dove potrai consultare tutto quello che può servirti sui nostri libri!
-Clicca qui (${linkReg}) per essere reindirizzato direttamente alla pagina di registrazione; in pochi click sarai dentro!
-Grazie e buona lettura!
-La tua Biblioteca preferita.`;
-
-      const body = encodeURIComponent(bodyText);
-      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-      document.getElementById('inviteEmail').value = '';
+      const bodyText = `Carissim* lettore/lettrice,\n\niscriviti al sito ufficiale della biblioteca:\n${linkReg}\n\nA presto!`;
+      window.location.href = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
     }
 
     function renderAdminEvidenzaChecklist() {
@@ -1300,7 +1281,7 @@ La tua Biblioteca preferita.`;
     function saveEvidenzaSelection() {
       evidenzaList = Array.from(document.querySelectorAll('.ev-chk:checked')).map(el => el.value);
       saveGlobalState();
-      alert('Libri in evidenza salvati e sincronizzati con successo!');
+      alert('Libri in evidenza salvati e sincronizzati!');
       renderHomeEvidenza();
     }
 
@@ -1321,7 +1302,7 @@ La tua Biblioteca preferita.`;
 
     function saveSiteConfig() {
       siteConfig.title = document.getElementById('cfgTitle').value;
-      siteConfig.desc = document.getElementById('cfgDesc').value;
+      siteConfig.desc = document.getElementById('cfgDesc'].value;
       siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
       siteConfig.titleColor = document.getElementById('cfgTitleColor').value;
       siteConfig.wordColor = document.getElementById('cfgWordColor').value;
@@ -1335,7 +1316,7 @@ La tua Biblioteca preferita.`;
 
       saveGlobalState();
       initSiteConfig();
-      alert('Personalizzazioni salvate e pubblicate per tutti gli utenti!');
+      alert('Personalizzazioni salvate e pubblicate per tutti!');
     }
 
     window.addEventListener('DOMContentLoaded', () => {
