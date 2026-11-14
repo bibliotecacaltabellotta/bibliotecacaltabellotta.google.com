@@ -674,11 +674,10 @@
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
     let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
     
-    let defaultReaders = [
+    let readers = [
       { nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] },
       { nickname: "MarioRossi", email: "mario@example.com", cellulare: "3331111111", password: "password", adminNotes: "", returnedBooks: [], activeLoans: [] }
     ];
-    let readers = defaultReaders;
 
     let evidenzaList = [];
     let siteConfig = { 
@@ -715,7 +714,7 @@
           }
         }
       } catch(e) {
-        console.log("Errore caricamento remoto, uso dati locali.");
+        console.log("Uso dati locali di riserva.");
       }
     }
 
@@ -1323,7 +1322,7 @@
       siteConfig.wordFont = document.getElementById('cfgWordFont').value;
       siteConfig.accent = document.getElementById('cfgAccent').value;
       siteConfig.address = document.getElementById('cfgAddress').value;
-      siteConfig.phone = document.getElementById('cfgPhone'].value;
+      siteConfig.phone = document.getElementById('cfgPhone').value;
       siteConfig.hours = document.getElementById('cfgHours').value;
       siteConfig.email = document.getElementById('cfgEmail').value;
 
