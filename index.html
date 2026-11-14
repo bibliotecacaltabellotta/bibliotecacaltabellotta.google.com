@@ -607,8 +607,7 @@
   </footer>
 
   <script>
-    const JSONBIN_BIN_ID = "6af84b71ac6210605a87236f"; 
-    const JSONBIN_API_KEY = "$2a$10$NOCN6n8OLlk8UqTt1A.P9.A/UWIfbIcYDNXDCGv2.DO3fst4eNBym";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz9eT4qp81N8Rr2N_8lMQ2vacvnACXwvcNT2dIxA78yA6_rIdES84kEBeW9iJhVn7lJ/exec";
     const ADMIN_EMAIL = "bibliotecacaltabellotta@gmail.com";
 
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
@@ -649,66 +648,32 @@
       return currentUser.email === ADMIN_EMAIL || currentUser.cellulare === "3330000000" || currentUser.nickname.toLowerCase() === "bibliotecacaltabellotta";
     }
 
-    async function loadFromBin() {
-      if (!JSONBIN_BIN_ID) return;
+    async function loadFromCloud() {
       try {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-          method: 'GET',
-          headers: { 
-            'X-Master-Key': JSONBIN_API_KEY,
-            'X-Bin-Meta': 'false'
-          }
-        });
+        const res = await fetch(APPS_SCRIPT_URL);
         if (!res.ok) return;
         const data = await res.json();
-        if (data && typeof data === 'object') {
-          if (data.loans && typeof data.loans === 'object') {
-            loansMap = data.loans;
-            localStorage.setItem('biblio_loans_map', JSON.stringify(loansMap));
-          }
-          if (Array.isArray(data.evidenza)) {
-            evidenzaList = data.evidenza;
-            localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
-          }
-          if (data.config && typeof data.config === 'object') {
-            siteConfig = { ...siteConfig, ...data.config };
-            localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
-          }
-          if (Array.isArray(data.readers) && data.readers.length > 0) {
-            readers = data.readers;
-            localStorage.setItem('biblio_readers', JSON.stringify(readers));
-          }
+        if (Array.isArray(data) && data.length > 0) {
+          readers = data;
+          localStorage.setItem('biblio_readers', JSON.stringify(readers));
         }
       } catch (e) {}
     }
 
-    async function saveToBin() {
-      if (!JSONBIN_BIN_ID) return false;
+    async function saveToCloud(actionPayload) {
       try {
-        const payload = {
-          loans: loansMap,
-          evidenza: evidenzaList,
-          config: siteConfig,
-          readers: readers
-        };
-
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': JSONBIN_API_KEY
-          },
-          body: JSON.stringify(payload)
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify(actionPayload)
         });
-
-        if (!res.ok) {
-          const errText = await res.text();
-          alert(`Errore salvataggio sul Bin (HTTP ${res.status}): ${errText}`);
+        const result = await res.json();
+        if (result.status !== "success") {
+          alert(`Errore: ${result.message || "Operazione fallita"}`);
           return false;
         }
         return true;
       } catch (e) {
-        alert("Errore di connessione durante il salvataggio sul Bin: " + e.message);
+        alert("Errore di connessione al server: " + e.message);
         return false;
       }
     }
@@ -830,7 +795,7 @@
     }
 
     async function initApp() {
-      await loadFromBin();
+      await loadFromCloud();
       if (GOOGLE_SHEET_CSV_URL) {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
@@ -930,7 +895,8 @@
       renderCatalog();
       renderHomeEvidenza();
       if(document.getElementById('view-preferiti').classList.contains('active')) renderFavorites();
-      await saveToBin();
+      
+      await saveToCloud({ action: "updateUser", email: currentUser.email, favorites: favorites, returnedBooks: me ? me.returnedBooks : [] });
     }
 
     function renderFavorites() {
@@ -978,7 +944,7 @@
       const pass = document.getElementById('loginPass').value;
       if(!identifier || !pass) { alert('Compila tutti i campi.'); return; }
 
-      await loadFromBin();
+      await loadFromCloud();
       const user = readers.find(r => (r.email === identifier || r.nickname === identifier || r.cellulare === identifier) && r.password === pass);
       if(!user) { alert('Credenziali non valide.'); return; }
 
@@ -999,22 +965,16 @@
 
       if(!email || !phone || !nickname || !pass) { alert('Compila tutti i campi.'); return; }
       
-      await loadFromBin();
-      if(readers.some(r => r.nickname.toLowerCase() === nickname.toLowerCase())) { alert('Nickname già occupato.'); return; }
-      if(readers.some(r => r.email === email)) { alert('Email già registrata.'); return; }
-
-      const newReader = { nickname, email, cellulare: phone, password: pass, adminNotes: "", favorites: [], returnedBooks: [] };
-      readers.push(newReader);
-      localStorage.setItem('biblio_readers', JSON.stringify(readers));
-
-      currentUser = { email, nickname, cellulare: phone, password: pass };
-      favorites = [];
-      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
-      localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
-
-      const ok = await saveToBin();
-      if (ok) alert('Registrazione completata e salvata nel Bin!');
-      switchView('home');
+      const ok = await saveToCloud({ action: "register", nickname, email, cellulare: phone, password: pass });
+      if (ok) {
+        await loadFromCloud();
+        currentUser = { email, nickname, cellulare: phone, password: pass };
+        favorites = [];
+        localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+        localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
+        alert('Registrazione completata e salvata nel cloud!');
+        switchView('home');
+      }
     }
 
     async function googleLogin() {
@@ -1022,7 +982,7 @@
       if(!email) return;
       email = email.trim();
 
-      await loadFromBin();
+      await loadFromCloud();
       const user = readers.find(r => r.email.toLowerCase() === email.toLowerCase());
       if(!user) { alert('Nessun account trovato con questa email.'); switchAuthTab('registra'); document.getElementById('regEmail').value = email; return; }
 
@@ -1045,22 +1005,20 @@
       if(!email) return;
       email = email.trim();
 
-      await loadFromBin();
+      await loadFromCloud();
       if(readers.some(r => r.email.toLowerCase() === email.toLowerCase())) { alert('Account già esistente.'); switchAuthTab('accedi'); return; }
 
       let nickname = email.split('@')[0];
-      const newReader = { nickname, email, cellulare: "", password: "googlepassword", adminNotes: "", favorites: [], returnedBooks: [] };
-      readers.push(newReader);
-      localStorage.setItem('biblio_readers', JSON.stringify(readers));
-
-      currentUser = { email, nickname, cellulare: "", password: "googlepassword" };
-      favorites = [];
-      localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
-      localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
-
-      const ok = await saveToBin();
-      if (ok) alert('Registrazione completata e salvata nel Bin!');
-      switchView('home');
+      const ok = await saveToCloud({ action: "register", nickname, email, cellulare: "", password: "googlepassword" });
+      if (ok) {
+        await loadFromCloud();
+        currentUser = { email, nickname, cellulare: "", password: "googlepassword" };
+        favorites = [];
+        localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+        localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
+        alert('Registrazione completata e salvata nel cloud!');
+        switchView('home');
+      }
     }
 
     function logoutUser() {
@@ -1074,9 +1032,9 @@
     async function deleteAccount() {
       if(isAdmin()) { alert("L'admin non può eliminare l'account."); return; }
       if(confirm("Eliminare definitivamente l'account?")) {
+        await saveToCloud({ action: "deleteUser", email: currentUser.email });
         readers = readers.filter(r => r.email !== currentUser.email);
         localStorage.setItem('biblio_readers', JSON.stringify(readers));
-        await saveToBin();
         logoutUser();
       }
     }
@@ -1118,8 +1076,9 @@
       currentUser.nickname = nick;
       currentUser.password = pass;
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
-      const ok = await saveToBin();
-      if (ok) alert('Profilo aggiornato e salvato nel Bin!');
+      
+      await saveToCloud({ action: "updateUser", email: currentUser.email, cellulare: phone, nickname: nick, password: pass, favorites: reader.favorites, returnedBooks: reader.returnedBooks });
+      alert('Profilo aggiornato e salvato nel cloud!');
       renderProfile();
     }
 
@@ -1176,8 +1135,8 @@
       if(r) {
         r.adminNotes = notes;
         localStorage.setItem('biblio_readers', JSON.stringify(readers));
-        const ok = await saveToBin();
-        if (ok) alert('Note riservate salvate nel Bin!');
+        await saveToCloud({ action: "updateAdminNotes", email: viewingReaderEmail, adminNotes: notes });
+        alert('Note riservate salvate nel cloud!');
       }
     }
 
@@ -1233,6 +1192,7 @@
           if(r) {
             if(!r.returnedBooks) r.returnedBooks = [];
             r.returnedBooks.push({ titolo: libro.titolo, autore: libro.autore });
+            await saveToCloud({ action: "updateUser", email: r.email, returnedBooks: r.returnedBooks, favorites: r.favorites });
           }
         }
         libro.assegnato = '';
@@ -1258,11 +1218,12 @@
       localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       localStorage.setItem('biblio_loans_map', JSON.stringify(loansMap));
       localStorage.setItem('biblio_readers', JSON.stringify(readers));
-      const ok = await saveToBin();
+      
+      await saveToCloud({ action: "saveLoans", loans: loansMap });
       renderAdminPrestiti();
       renderCatalog();
       renderHomeEvidenza();
-      if (ok) alert('Prestito aggiornato e salvato nel Bin!');
+      alert('Prestito aggiornato e salvato nel cloud!');
     }
 
     function sendInviteEmail() {
@@ -1285,8 +1246,8 @@
       if(!isAdmin()) return;
       evidenzaList = Array.from(document.querySelectorAll('.ev-chk:checked')).map(el => el.value);
       localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
-      const ok = await saveToBin();
-      if (ok) alert('Libri in evidenza salvati nel Bin!');
+      await saveToCloud({ action: "saveEvidenza", evidenza: evidenzaList });
+      alert('Libri in evidenza salvati nel cloud!');
       renderHomeEvidenza();
     }
 
@@ -1323,8 +1284,8 @@
 
       localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
       initSiteConfig();
-      const ok = await saveToBin();
-      if (ok) alert('Personalizzazioni salvate nel Bin!');
+      await saveToCloud({ action: "saveConfig", config: siteConfig });
+      alert('Personalizzazioni salvate nel cloud!');
     }
 
     window.addEventListener('DOMContentLoaded', () => {
