@@ -608,7 +608,6 @@
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwX-A22zTG6w8b6nz1MapdlJfu4whO_MdWLzORSlMdPHYu7cKhlzjmjmEyq9JkVxoAh/exec";
     const ADMIN_EMAIL = "bibliotecacaltabellotta@gmail.com";
-
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
     const FALLBACK_BOOKS = [
@@ -620,11 +619,9 @@
     let loansMap = JSON.parse(localStorage.getItem('biblio_loans_map')) || {};
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
     let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
-    
     let readers = JSON.parse(localStorage.getItem('biblio_readers')) || [
       { nickname: "BibliotecaCaltabellotta", email: ADMIN_EMAIL, cellulare: "3330000000", password: "admin", adminNotes: "", favorites: [], returnedBooks: [] }
     ];
-
     let evidenzaList = JSON.parse(localStorage.getItem('biblio_evidenza')) || [];
     let siteConfig = JSON.parse(localStorage.getItem('biblio_config')) || { 
       accent: "#a83226", 
@@ -647,12 +644,12 @@
       return currentUser.email === ADMIN_EMAIL || currentUser.cellulare === "3330000000" || currentUser.nickname.toLowerCase() === "bibliotecacaltabellotta";
     }
 
+    // Caricamento asincrono per velocizzare l'apertura immediata del sito
     async function loadFromCloud() {
       try {
         const res = await fetch(APPS_SCRIPT_URL);
         if (!res.ok) return;
         const data = await res.json();
-        
         if (data && typeof data === 'object') {
           if (Array.isArray(data.readers) && data.readers.length > 0) {
             readers = data.readers;
@@ -809,33 +806,43 @@
     }
 
     async function initApp() {
-      await loadFromCloud();
-      if (GOOGLE_SHEET_CSV_URL) {
-        try {
-          const res = await fetch(GOOGLE_SHEET_CSV_URL);
-          const txt = await res.text();
-          const rows = parseCSV(txt);
-          const csvBooks = rows.slice(1).filter(r => r[0] || r[1]).map((r, idx) => ({
-            catalogazione: r[2] || String(idx + 1).padStart(3, '0'),
-            titolo: r[0] || r[1] || '—',
-            autore: r[1] && r[0] ? r[1] : (r[2] || '—'),
-            casa: r[3] || '—',
-            anno: r[4] || '—',
-            cm: r[5] || '—',
-            stato: 'Disponibile',
-            assegnato: '',
-            dataPrestito: '',
-            rientro: '',
-            notePrestito: ''
-          }));
-          if(csvBooks.length > 0) {
-            allBooks = csvBooks;
-          }
-        } catch(e) {}
-      }
-      applyLoansToBooks();
-      allBooks.sort((a, b) => a.titolo.localeCompare(b.titolo));
-      localStorage.setItem('biblio_books', JSON.stringify(allBooks));
+      // 1. Mostra subito la schermata coi dati in cache per renderla istantanea
+      initSiteConfig();
+      renderNavbar();
+      renderCatalog();
+      renderHomeEvidenza();
+
+      // 2. Scarica in background i dati freschi da Cloud e CSV per non bloccare l'utente
+      loadFromCloud().then(() => {
+        if (GOOGLE_SHEET_CSV_URL) {
+          fetch(GOOGLE_SHEET_CSV_URL)
+            .then(res => res.text())
+            .then(txt => {
+              const rows = parseCSV(txt);
+              const csvBooks = rows.slice(1).filter(r => r[0] || r[1]).map((r, idx) => ({
+                catalogazione: r[2] || String(idx + 1).padStart(3, '0'),
+                titolo: r[0] || r[1] || '—',
+                autore: r[1] && r[0] ? r[1] : (r[2] || '—'),
+                casa: r[3] || '—',
+                anno: r[4] || '—',
+                cm: r[5] || '—',
+                stato: 'Disponibile',
+                assegnato: '',
+                dataPrestito: '',
+                rientro: '',
+                notePrestito: ''
+              }));
+              if(csvBooks.length > 0) {
+                allBooks = csvBooks;
+                applyLoansToBooks();
+                allBooks.sort((a, b) => a.titolo.localeCompare(b.titolo));
+                localStorage.setItem('biblio_books', JSON.stringify(allBooks));
+                renderCatalog();
+                renderHomeEvidenza();
+              }
+            }).catch(e => {});
+        }
+      });
 
       if (currentUser) {
         const me = readers.find(r => r.email === currentUser.email);
@@ -844,11 +851,6 @@
           localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
         }
       }
-
-      initSiteConfig();
-      renderNavbar();
-      renderCatalog();
-      renderHomeEvidenza();
     }
 
     function renderCatalog() {
@@ -1240,10 +1242,15 @@
       alert('Prestito aggiornato e salvato nel cloud!');
     }
 
-    function sendInviteEmail() {
+    async function sendInviteEmail() {
       const email = document.getElementById('inviteEmail').value.trim();
-      if(!email) return;
-      alert(`Invito simulato inviato a ${email}`);
+      if(!email) { alert('Inserisci un indirizzo email.'); return; }
+      
+      const success = await saveToCloud({ action: "sendInvite", email: email });
+      if(success) {
+        alert(`Invito ufficiale inviato con successo a ${email}!`);
+        document.getElementById('inviteEmail').value = '';
+      }
     }
 
     function renderAdminEvidenzaChecklist() {
