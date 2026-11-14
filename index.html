@@ -661,6 +661,10 @@
   </footer>
 
   <script>
+    // CONFIGURAZIONE DATABASE CLOUD (JSONBIN)
+    const JSONBIN_BIN_ID = "6af7b070ffd5d16053bfdf79"; 
+    const JSONBIN_API_KEY = "$2a$10$NOCN6n8OLlk8UqTt1A.P9.A/UWIfbIcYDNXDCGv2.DO3fst4eNBym";
+
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
     const FALLBACK_BOOKS = [
@@ -703,6 +707,119 @@
       if(!currentUser) return false;
       return currentUser.email === "bibliotecacaltabellotta@gmail.com" || currentUser.cellulare === "3330000000" || currentUser.nickname.toLowerCase() === "bibliotecacaltabellotta";
     }
+
+    // --- SINCRONIZZAZIONE CLOUD (JSONBIN) ---
+    let isSyncing = false;
+
+    async function syncFromCloud(isBackground = false) {
+      if (!JSONBIN_BIN_ID || JSONBIN_API_KEY === "INSERISCI_QUI_LA_TUA_MASTER_KEY") return;
+      if (isSyncing) return;
+      isSyncing = true;
+
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+          headers: {
+            'X-Master-Key': JSONBIN_API_KEY,
+            'X-Bin-Meta': 'false'
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object' && !data.test) {
+            if (Array.isArray(data.books) && data.books.length > 0) {
+              // Se l'utente corrente NON è admin, rimuoviamo le note riservate dei prestiti dalla memoria locale
+              allBooks = data.books.map(b => isAdmin() ? b : { ...b, notePrestito: "" });
+              localStorage.setItem('biblio_books', JSON.stringify(allBooks));
+            }
+            if (Array.isArray(data.evidenza)) {
+              evidenzaList = data.evidenza;
+              localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
+            }
+            if (data.config && typeof data.config === 'object') {
+              siteConfig = { ...siteConfig, ...data.config };
+              localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
+            }
+            if (Array.isArray(data.readers) && data.readers.length > 0) {
+              // Garantisce che l'admin sia sempre presente
+              if(!data.readers.some(r => r.email === "bibliotecacaltabellotta@gmail.com")) {
+                data.readers.unshift({ nickname: "BibliotecaCaltabellotta", email: "bibliotecacaltabellotta@gmail.com", cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] });
+              }
+              // Se l'utente corrente NON è admin, oscuriamo le adminNotes degli utenti
+              readers = data.readers.map(r => isAdmin() ? r : { ...r, adminNotes: "" });
+              localStorage.setItem('biblio_readers', JSON.stringify(readers));
+            }
+
+            // Aggiorna UI senza disturbare l'admin se sta digitando nei pannelli di gestione
+            initSiteConfig();
+            const activeView = document.querySelector('.view-section.active')?.id;
+            if (!isBackground || (activeView !== 'view-gestione' && activeView !== 'view-scheda-utente' && activeView !== 'view-profilo')) {
+              renderHomeEvidenza();
+              if (activeView === 'view-catalogo') renderCatalog();
+              if (activeView === 'view-lettori') renderReaders();
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Sincronizzazione cloud non riuscita:", e);
+      } finally {
+        isSyncing = false;
+      }
+    }
+
+    async function syncToCloud() {
+      if (!JSONBIN_BIN_ID || JSONBIN_API_KEY === "INSERISCI_QUI_LA_TUA_MASTER_KEY") {
+        console.warn("Chiave JSONBin mancante: modifiche salvate solo in locale.");
+        return;
+      }
+      isSyncing = true;
+      try {
+        // Prima di salvare, se non siamo admin (es. registrazione nuovo utente), recuperiamo eventuali note admin esistenti per non sovrascriverle con stringhe vuote
+        let booksToSave = allBooks;
+        let readersToSave = readers;
+
+        if (!isAdmin()) {
+          const checkRes = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+            headers: { 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Meta': 'false' }
+          });
+          if (checkRes.ok) {
+            const remoteData = await checkRes.json();
+            if (Array.isArray(remoteData.books)) {
+              booksToSave = allBooks.map(localB => {
+                const remoteB = remoteData.books.find(rb => rb.titolo === localB.titolo);
+                return remoteB ? { ...localB, notePrestito: remoteB.notePrestito || "" } : localB;
+              });
+            }
+            if (Array.isArray(remoteData.readers)) {
+              readersToSave = readers.map(localR => {
+                const remoteR = remoteData.readers.find(rr => rr.email === localR.email);
+                return remoteR ? { ...localR, adminNotes: remoteR.adminNotes || "" } : localR;
+              });
+            }
+          }
+        }
+
+        const payload = {
+          books: booksToSave,
+          evidenza: evidenzaList,
+          config: siteConfig,
+          readers: readersToSave
+        };
+
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': JSONBIN_API_KEY
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        console.error("Errore salvataggio cloud:", e);
+      } finally {
+        isSyncing = false;
+      }
+    }
+    // ----------------------------------------
 
     function initSiteConfig() {
       document.documentElement.style.setProperty('--accent', siteConfig.accent);
@@ -805,6 +922,8 @@
     }
 
     async function loadBooks() {
+      await syncFromCloud(false);
+
       if (GOOGLE_SHEET_CSV_URL) {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
@@ -826,7 +945,14 @@
           if(csvBooks.length > 0) {
             allBooks = csvBooks.map(cb => {
               let existing = allBooks.find(b => b.titolo.toLowerCase() === cb.titolo.toLowerCase());
-              return existing ? { ...cb, stato: existing.stato, assegnato: existing.assegnato, dataPrestito: existing.dataPrestito, rientro: existing.rientro, notePrestito: existing.notePrestito } : cb;
+              return existing ? { 
+                ...cb, 
+                stato: existing.stato, 
+                assegnato: existing.assegnato, 
+                dataPrestito: existing.dataPrestito, 
+                rientro: existing.rientro, 
+                notePrestito: isAdmin() ? (existing.notePrestito || '') : '' 
+              } : cb;
             });
           }
         } catch(e) {}
@@ -939,22 +1065,31 @@
     }
 
     // ACCESSO E REGISTRAZIONE
-    function handleLogin() {
+    async function handleLogin() {
       const identifier = document.getElementById('loginId').value.trim();
       const pass = document.getElementById('loginPass').value;
 
       if(!identifier || !pass) { alert('Compila tutti i campi.'); return; }
+
+      // Sincronizziamo dal cloud prima del login per avere credenziali sempre aggiornate su qualsiasi PC
+      await syncFromCloud(false);
 
       const user = readers.find(r => (r.email === identifier || r.nickname === identifier || r.cellulare === identifier) && r.password === pass);
       if(!user) { alert('Credenziali non valide.'); return; }
 
       currentUser = { email: user.email, nickname: user.nickname, cellulare: user.cellulare, password: user.password };
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+      
+      // Se ha appena effettuato il login come admin, scarichiamo i dati completi incluse le note riservate
+      if (isAdmin()) {
+        await syncFromCloud(false);
+      }
+
       alert('Accesso effettuato!');
       switchView('home');
     }
 
-    function handleRegister() {
+    async function handleRegister() {
       const email = document.getElementById('regEmail').value.trim();
       const phone = document.getElementById('regPhone').value.trim();
       const nickname = document.getElementById('regNickname').value.trim();
@@ -962,6 +1097,8 @@
 
       if(!email || !phone || !nickname || !pass) { alert('Compila tutti i campi.'); return; }
       
+      await syncFromCloud(false);
+
       if(readers.some(r => r.nickname.toLowerCase() === nickname.toLowerCase())) {
         alert('Questo nickname è già occupato da un altro utente. Due user non possono avere lo stesso nickname.');
         return;
@@ -978,27 +1115,33 @@
       currentUser = { email, nickname, cellulare: phone, password: pass };
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
 
+      await syncToCloud();
+
       alert('Registrazione completata!');
       switchView('home');
     }
 
-    function googleLogin() {
+    async function googleLogin() {
+      await syncFromCloud(false);
       let gEmail = "bibliotecacaltabellotta@gmail.com";
       let user = readers.find(r => r.email === gEmail);
       if(!user) {
         user = { nickname: "BibliotecaCaltabellotta", email: gEmail, cellulare: "3330000000", password: "admin", adminNotes: "", returnedBooks: [], activeLoans: [] };
         readers.push(user);
         localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        await syncToCloud();
       }
       currentUser = { email: user.email, nickname: user.nickname, cellulare: user.cellulare, password: user.password };
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+      await syncFromCloud(false);
       alert('Accesso con Google completato!');
       switchView('home');
     }
 
-    function googleRegister() {
+    async function googleRegister() {
       let email = prompt("Inserisci la tua email Google per la registrazione:");
       if(!email) return;
+      await syncFromCloud(false);
       let user = readers.find(r => r.email === email);
       if(user) {
         alert('Account già esistente, effettua l\'accesso.');
@@ -1015,6 +1158,7 @@
 
       currentUser = { email, nickname, cellulare: "3330000000", password: "googlepassword" };
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+      await syncToCloud();
       alert('Registrazione con Google completata!');
       switchView('home');
     }
@@ -1022,13 +1166,19 @@
     function logoutUser() {
       currentUser = null;
       localStorage.removeItem('biblio_current_user');
+      // Rimuove eventuali note admin dalla memoria locale al logout
+      readers = readers.map(r => ({ ...r, adminNotes: "" }));
+      allBooks = allBooks.map(b => ({ ...b, notePrestito: "" }));
+      localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       switchView('home');
     }
 
-    function deleteAccount() {
+    async function deleteAccount() {
       if(confirm("Sei sicuro di voler eliminare definitivamente il tuo account e tutti i tuoi dati?")) {
         readers = readers.filter(r => r.email !== currentUser.email);
         localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        await syncToCloud();
         logoutUser();
       }
     }
@@ -1051,7 +1201,7 @@
       document.getElementById('profReturnedLoansList').innerHTML = returned.length ? returned.map(b => `• <strong>${b.titolo}</strong> (${b.autore})`).join('<br>') : 'Nessun libro restituito.';
     }
 
-    function updateProfileData() {
+    async function updateProfileData() {
       let phone = document.getElementById('profPhoneInput').value.trim();
       let nick = document.getElementById('profNickInput').value.trim();
       let pass = document.getElementById('profPassInput').value;
@@ -1075,6 +1225,7 @@
       currentUser.nickname = nick;
       currentUser.password = pass;
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
+      await syncToCloud();
       alert('Profilo aggiornato con successo!');
       renderProfile();
     }
@@ -1125,13 +1276,14 @@
       switchView('scheda-utente');
     }
 
-    function saveAdminNotes() {
+    async function saveAdminNotes() {
       if(!isAdmin() || !viewingReaderEmail) return;
       let notes = document.getElementById('schAdminNotes').value;
       let r = readers.find(x => x.email === viewingReaderEmail);
       if(r) {
         r.adminNotes = notes;
         localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        await syncToCloud();
         alert('Note salvate con successo!');
       }
     }
@@ -1148,6 +1300,7 @@
     }
 
     function renderAdminPrestiti() {
+      if(!isAdmin()) return;
       const tbody = document.getElementById('adminPrestitiBody');
       const searchVal = (document.getElementById('adminPrestitiSearch')?.value || '').toLowerCase();
       
@@ -1176,7 +1329,8 @@
       }).join('');
     }
 
-    function setPrestito(idx, nuovoStato) {
+    async function setPrestito(idx, nuovoStato) {
+      if(!isAdmin()) return;
       const target = document.getElementById(`assign_target_${idx}`).value.trim();
       const dataP = document.getElementById(`date_prestito_${idx}`).value;
       const dataR = document.getElementById(`date_rientro_${idx}`).value;
@@ -1210,6 +1364,7 @@
       libro.stato = nuovoStato;
       localStorage.setItem('biblio_books', JSON.stringify(allBooks));
       localStorage.setItem('biblio_readers', JSON.stringify(readers));
+      await syncToCloud();
       renderAdminPrestiti();
       renderCatalog();
       renderHomeEvidenza();
@@ -1236,9 +1391,11 @@
       `).join('');
     }
 
-    function saveEvidenzaSelection() {
+    async function saveEvidenzaSelection() {
+      if(!isAdmin()) return;
       evidenzaList = Array.from(document.querySelectorAll('.ev-chk:checked')).map(el => el.value);
       localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
+      await syncToCloud();
       alert('Libri in evidenza salvati!');
       renderHomeEvidenza();
     }
@@ -1258,7 +1415,8 @@
       document.getElementById('cfgEmail').value = siteConfig.email || '';
     }
 
-    function saveSiteConfig() {
+    async function saveSiteConfig() {
+      if(!isAdmin()) return;
       siteConfig.title = document.getElementById('cfgTitle').value;
       siteConfig.desc = document.getElementById('cfgDesc').value;
       siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
@@ -1274,6 +1432,7 @@
 
       localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
       initSiteConfig();
+      await syncToCloud();
       alert('Personalizzazioni salvate con successo!');
     }
 
@@ -1289,6 +1448,11 @@
       initSiteConfig();
       renderNavbar();
       loadBooks();
+
+      // Aggiornamento automatico in tempo reale ogni 5 secondi
+      setInterval(() => {
+        syncFromCloud(true);
+      }, 5000);
     });
   </script>
 </body>
