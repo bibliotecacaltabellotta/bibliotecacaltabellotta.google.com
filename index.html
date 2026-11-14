@@ -612,14 +612,8 @@
       <!-- TAB SITO (PERSONALIZZAZIONE) -->
       <div id="adminSito" class="admin-panel" style="display:none;">
         <div class="auth-card" style="margin: 0; text-align: left; max-width: 700px;">
-          <h3>Personalizzazione Sito & GitHub Sync</h3>
+          <h3>Personalizzazione Sito</h3>
           
-          <div class="form-group" style="background: rgba(168,50,38,0.1); padding: 12px; border-radius: 6px; border: 1px solid var(--accent);">
-            <label style="color: var(--text-primary); font-weight:600;">GitHub Personal Access Token (Token Segreto)</label>
-            <input type="password" id="cfgGithubToken" class="form-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-            <small style="color: var(--text-secondary);">Inserisci il token di GitHub per rendere visibili in tempo reale le modifiche a tutti gli utenti.</small>
-          </div>
-
           <h4 style="margin: 16px 0 8px; color: var(--accent);">Facciata principale</h4>
           <div class="form-group"><label>Modifica Titolo</label><input type="text" id="cfgTitle" class="form-input"></div>
           <div class="form-group"><label>Modifica Sottotitolo</label><textarea id="cfgDesc" class="form-input" rows="2"></textarea></div>
@@ -668,11 +662,9 @@
 
   <script>
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
-
-    // Configurazione GitHub Repository per la sincronizzazione globale
-    const GH_OWNER = "bibliotecacaltabellotta";
-    const GH_REPO = "bibliotecacaltabellotta.google.com";
-    const GH_FILE_PATH = "db_state.json";
+    
+    // URL dell'App Web Google Apps Script collegata al tuo Google Sheet
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKKqWew_s8Jwsr7b-xzXlKY8-R8n1T075Zdwr4q2x-Gebo-4v3rVNXzLRZcmRpSSyL/exec";
 
     const FALLBACK_BOOKS = [
       { catalogazione: "001", titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori", anno: "1982", cm: "20cm", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
@@ -703,8 +695,7 @@
       address: "Via Cossentino, 2 - 92010 Caltabellotta (AG)", 
       phone: "+39 0925 000000",
       hours: "Lun - Ven: 9:00 - 13:00",
-      email: "bibliotecacaltabellotta@gmail.com",
-      githubToken: localStorage.getItem('biblio_gh_token') || ""
+      email: "bibliotecacaltabellotta@gmail.com"
     };
 
     function isAdmin() {
@@ -712,30 +703,25 @@
       return currentUser.email === "bibliotecacaltabellotta@gmail.com" || currentUser.cellulare === "3330000000" || currentUser.nickname.toLowerCase() === "bibliotecacaltabellotta";
     }
 
-    // Sincronizzazione Globale con GitHub
+    // Sincronizzazione con Google Sheets (Database remoto)
     async function fetchGlobalState() {
       try {
-        const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}`);
+        const res = await fetch(APPS_SCRIPT_URL);
         if(res.ok) {
           const data = await res.json();
-          const decoded = JSON.parse(atob(data.content));
-          if(decoded.books) allBooks = decoded.books;
-          if(decoded.evidenza) evidenzaList = decoded.evidenza;
-          if(decoded.config) siteConfig = { ...siteConfig, ...decoded.config };
-          if(decoded.readers) readers = decoded.readers;
+          if(data && Object.keys(data).length > 0) {
+            if(data.books && data.books.length > 0) allBooks = data.books;
+            if(data.evidenza) evidenzaList = data.evidenza;
+            if(data.config) siteConfig = { ...siteConfig, ...data.config };
+            if(data.readers && data.readers.length > 0) readers = data.readers;
+          }
         }
       } catch(e) {
-        console.log("Stato remoto non trovato, uso default.");
+        console.log("Impossibile caricare dallo Sheet, uso default o CSV.");
       }
     }
 
     async function saveGlobalState() {
-      const token = siteConfig.githubToken || localStorage.getItem('biblio_gh_token');
-      if(!token) {
-        alert("Attenzione: Inserisci il Token GitHub in 'Personalizza Sito' per salvare le modifiche in tempo reale per tutti gli utenti.");
-        return;
-      }
-      
       const payload = {
         books: allBooks,
         evidenza: evidenzaList,
@@ -743,38 +729,15 @@
         readers: readers
       };
 
-      const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-
       try {
-        // Ottieni lo SHA corrente del file se esiste
-        let sha = "";
-        const getRes = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}`, {
-          headers: { "Authorization": `token ${token}` }
+        await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(payload)
         });
-        if(getRes.ok) {
-          const fileData = await getRes.json();
-          sha = fileData.sha;
-        }
-
-        // Salva il file aggiornato su GitHub
-        const putRes = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}`, {
-          method: "PUT",
-          headers: {
-            "Authorization": `token ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: "Aggiornamento dati biblioteca via pannello admin",
-            content: contentEncoded,
-            sha: sha ? sha : undefined
-          })
-        });
-
-        if(!putRes.ok) {
-          alert("Errore nel salvataggio remoto su GitHub. Verifica che il Token sia valido.");
-        }
       } catch(e) {
-        console.error("Errore di rete durante il salvataggio:", e);
+        console.error("Errore nel salvataggio su Google Sheets:", e);
       }
     }
 
@@ -879,9 +842,11 @@
     }
 
     async function loadBooks() {
+      // 1. Prima carichiamo lo stato globale salvato su Google Sheets
       await fetchGlobalState();
 
-      if (GOOGLE_SHEET_CSV_URL && allBooks.length === 0) {
+      // 2. Se non ci sono libri salvati nello Sheet, li carichiamo dal CSV originale
+      if (allBooks.length === 0 && GOOGLE_SHEET_CSV_URL) {
         try {
           const res = await fetch(GOOGLE_SHEET_CSV_URL);
           const txt = await res.text();
@@ -1299,7 +1264,7 @@
       renderCatalog();
       renderHomeEvidenza();
       if(document.getElementById('view-preferiti').classList.contains('active')) renderFavorites();
-      alert('Stato prestito aggiornato e sincronizzato!');
+      alert('Stato prestito aggiornato e sincronizzato con successo!');
     }
 
     function sendInviteEmail() {
@@ -1335,12 +1300,11 @@ La tua Biblioteca preferita.`;
     function saveEvidenzaSelection() {
       evidenzaList = Array.from(document.querySelectorAll('.ev-chk:checked')).map(el => el.value);
       saveGlobalState();
-      alert('Libri in evidenza salvati e sincronizzati!');
+      alert('Libri in evidenza salvati e sincronizzati con successo!');
       renderHomeEvidenza();
     }
 
     function loadConfigToAdmin() {
-      document.getElementById('cfgGithubToken').value = siteConfig.githubToken || localStorage.getItem('biblio_gh_token') || '';
       document.getElementById('cfgTitle').value = siteConfig.title;
       document.getElementById('cfgDesc').value = siteConfig.desc;
       document.getElementById('cfgHeroImg').value = siteConfig.heroImg;
@@ -1356,12 +1320,6 @@ La tua Biblioteca preferita.`;
     }
 
     function saveSiteConfig() {
-      const tokenInput = document.getElementById('cfgGithubToken').value.trim();
-      if(tokenInput) {
-        siteConfig.githubToken = tokenInput;
-        localStorage.setItem('biblio_gh_token', tokenInput);
-      }
-
       siteConfig.title = document.getElementById('cfgTitle').value;
       siteConfig.desc = document.getElementById('cfgDesc').value;
       siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
