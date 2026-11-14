@@ -22,8 +22,6 @@
       --heading-font: 'Lora', Georgia, serif;
       --hero-title-color: #f5f2ed;
       --hero-word-color: #a83226;
-      --hero-title-font: var(--heading-font);
-      --hero-word-font: var(--heading-font);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -174,8 +172,8 @@
       margin-bottom: 16px;
       max-width: 800px;
     }
-    .hero-title .main-text { color: var(--hero-title-color); font-family: var(--hero-title-font); }
-    .hero-title .word-highlight { color: var(--hero-word-color); font-family: var(--hero-word-font); font-style: italic; }
+    .hero-title .main-text { color: var(--hero-title-color); font-family: var(--heading-font); }
+    .hero-title .word-highlight { color: var(--hero-word-color); font-family: var(--heading-font); font-style: italic; }
     
     .hero-desc {
       color: var(--text-secondary);
@@ -361,13 +359,14 @@
               <th>Autore</th>
               <th>Casa editrice</th>
               <th>Anno</th>
+              <th>Pagine</th>
               <th id="thCatalogCm" style="display:none;">Cm</th>
               <th>Stato Prestito</th>
               <th style="text-align: center;">Preferito</th>
             </tr>
           </thead>
           <tbody id="catalogTableBody">
-            <tr><td colspan="8" style="text-align:center; padding: 24px;">Caricamento catalogo...</td></tr>
+            <tr><td colspan="9" style="text-align:center; padding: 24px;">Caricamento catalogo...</td></tr>
           </tbody>
         </table>
       </div>
@@ -608,15 +607,9 @@
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwX-A22zTG6w8b6nz1MapdlJfu4whO_MdWLzORSlMdPHYu7cKhlzjmjmEyq9JkVxoAh/exec";
     const ADMIN_EMAIL = "bibliotecacaltabellotta@gmail.com";
-    // Aggiunto parametro anti-cache per caricare i libri in tempo reale dal CSV di Google Sheets
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
-    const FALLBACK_BOOKS = [
-      { catalogazione: "001", titolo: "2010 Odissea 2", autore: "Clarke Arthur C.", casa: "Rizzoli Editori", anno: "1982", cm: "20cm", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" },
-      { catalogazione: "002", titolo: "25 agosto 1983 ed altri racconti inediti", autore: "Borges Jorge Luis", casa: "Ricci Franco Maria Ed", anno: "1990", cm: "22cm", stato: "Disponibile", assegnato: "", dataPrestito: "", rientro: "", notePrestito: "" }
-    ];
-
-    let allBooks = JSON.parse(localStorage.getItem('biblio_books')) || FALLBACK_BOOKS;
+    let allBooks = JSON.parse(localStorage.getItem('biblio_books')) || [];
     let loansMap = JSON.parse(localStorage.getItem('biblio_loans_map')) || {};
     let favorites = JSON.parse(localStorage.getItem('biblio_favorites') || '[]');
     let currentUser = JSON.parse(localStorage.getItem('biblio_current_user') || 'null');
@@ -632,8 +625,6 @@
       heroImg: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1400&q=80", 
       titleColor: "#f5f2ed",
       wordColor: "#a83226",
-      titleFont: "'Lora', Georgia, serif",
-      wordFont: "'Lora', Georgia, serif",
       address: "Via Cossentino, 2 - 92010 Caltabellotta (AG)", 
       phone: "+39 0925 000000",
       hours: "Lun - Ven: 9:00 - 13:00",
@@ -711,8 +702,6 @@
       document.documentElement.style.setProperty('--accent-hover', siteConfig.accent);
       document.documentElement.style.setProperty('--hero-title-color', siteConfig.titleColor || '#f5f2ed');
       document.documentElement.style.setProperty('--hero-word-color', siteConfig.wordColor || '#a83226');
-      document.documentElement.style.setProperty('--hero-title-font', siteConfig.titleFont || "'Lora', Georgia, serif");
-      document.documentElement.style.setProperty('--hero-word-font', siteConfig.wordFont || "'Lora', Georgia, serif");
 
       document.getElementById('heroMainText').innerText = siteConfig.title || "I libri di Caltabellotta, a portata di";
       document.getElementById('heroWordText').innerText = siteConfig.word || "ricerca";
@@ -813,18 +802,19 @@
 
       loadFromCloud().then(() => {
         if (GOOGLE_SHEET_CSV_URL) {
-          // Aggiunge un timestamp casuale per bypassare la cache di Google Sheets e caricare i libri in tempo reale
           const noCacheUrl = GOOGLE_SHEET_CSV_URL + "&t=" + new Date().getTime();
           fetch(noCacheUrl)
             .then(res => res.text())
             .then(txt => {
               const rows = parseCSV(txt);
-              const csvBooks = rows.slice(1).filter(r => r[0] || r[1]).map((r, idx) => ({
+              // Mappatura flessibile: gestisce correttamente eventuali campi mancanti (titolo, autore, casa, anno, pagine, cm)
+              const csvBooks = rows.slice(1).filter(r => r[0] || r[1] || r[2]).map((r, idx) => ({
                 catalogazione: r[2] || String(idx + 1).padStart(3, '0'),
                 titolo: r[0] || r[1] || '—',
                 autore: r[1] && r[0] ? r[1] : (r[2] || '—'),
                 casa: r[3] || '—',
                 anno: r[4] || '—',
+                pagine: r[6] || r[5] || '—', // Colonna G per le pagine (indice 6), con fallback sicuro
                 cm: r[5] || '—',
                 stato: 'Disponibile',
                 assegnato: '',
@@ -870,7 +860,7 @@
       const filtered = allBooks.filter(b => b.titolo.toLowerCase().includes(query) || b.autore.toLowerCase().includes(query) || b.casa.toLowerCase().includes(query));
       
       if(!filtered.length) { 
-        let colSpan = isAdmin() ? 8 : 6;
+        let colSpan = isAdmin() ? 9 : 7;
         tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; padding:32px;">Nessun libro trovato.</td></tr>`; 
         return; 
       }
@@ -887,6 +877,7 @@
             <td>${b.autore}</td>
             <td>${b.casa}</td>
             <td>${b.anno || '—'}</td>
+            <td>${b.pagine || '—'}</td>
             ${cmTd}
             <td>${badge}</td>
             <td style="text-align:center;"><button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:${isFav?'var(--accent)':'var(--text-muted)'}" onclick="toggleFavorite('${b.titolo.replace(/'/g, "\\'")}')">${isFav?'♥':'♡'}</button></td>
@@ -1184,7 +1175,7 @@
             <td><input type="date" id="date_prestito_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.dataPrestito||''}"></td>
             <td><input type="date" id="date_rientro_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.rientro||''}"></td>
             <td>
-              <div style="margin-bottom:6px;"><input type="text" id="note_prestito_${idx}" class="form-input" style="padding:4px; font-size:0.8rem;" value="${b.notePrestito||''}" placeholder="Note..."></div>
+              <div style="margin-bottom:6px;"><input type="text" id="note_prestito_${idx}" class="form-input" style="padding:4px; font-size:0.80rem;" value="${b.notePrestito||''}" placeholder="Note..."></div>
               ${isDisp ? `<button class="btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="setPrestito(${idx}, 'Non disponibile')">Assegna</button>` : `<button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="setPrestito(${idx}, 'Disponibile')">Rientro</button>`}
             </td>
           </tr>
@@ -1277,10 +1268,6 @@
       document.getElementById('cfgTitle').value = siteConfig.title;
       document.getElementById('cfgDesc').value = siteConfig.desc;
       document.getElementById('cfgHeroImg').value = siteConfig.heroImg;
-      document.getElementById('cfgTitleColor').value = siteConfig.titleColor || '#f5f2ed';
-      document.getElementById('cfgWordColor').value = siteConfig.wordColor || '#a83226';
-      document.getElementById('cfgTitleFont').value = siteConfig.titleFont || "'Lora', Georgia, serif";
-      document.getElementById('cfgWordFont').value = siteConfig.wordFont || "'Lora', Georgia, serif";
       document.getElementById('cfgAccent').value = siteConfig.accent;
       document.getElementById('cfgAddress').value = siteConfig.address || '';
       document.getElementById('cfgPhone').value = siteConfig.phone || '';
@@ -1293,11 +1280,7 @@
       siteConfig.title = document.getElementById('cfgTitle').value;
       siteConfig.desc = document.getElementById('cfgDesc').value;
       siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
-      siteConfig.titleColor = document.getElementById('cfgTitleColor').value;
-      siteConfig.wordColor = document.getElementById('cfgWordColor').value;
-      siteConfig.titleFont = document.getElementById('cfgTitleFont').value;
-      siteConfig.wordFont = document.getElementById('cfgWordFont').value;
-      siteConfig.accent = document.getElementById('cfgAccent').value;
+      siteConfig.accent = document.getElementById('cfgAccent').value; // ripristina o lascia invariato se corretto
       siteConfig.address = document.getElementById('cfgAddress').value;
       siteConfig.phone = document.getElementById('cfgPhone').value;
       siteConfig.hours = document.getElementById('cfgHours').value;
