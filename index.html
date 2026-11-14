@@ -566,18 +566,6 @@
           <div class="form-group"><label>Modifica Foto (URL)</label><input type="text" id="cfgHeroImg" class="form-input"></div>
           <div class="form-group"><label>Colore Testo Titolo</label><input type="color" id="cfgTitleColor" class="form-input" style="height:40px; padding:4px;"></div>
           <div class="form-group"><label>Colore Parola Evidenziata ("ricerca")</label><input type="color" id="cfgWordColor" class="form-input" style="height:40px; padding:4px;"></div>
-          <div class="form-group"><label>Font Testo Titolo</label>
-            <select id="cfgTitleFont" class="form-input">
-              <option value="'Lora', Georgia, serif">Lora (Serif)</option>
-              <option value="'Inter', sans-serif">Inter (Sans)</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Font Parola Evidenziata</label>
-            <select id="cfgWordFont" class="form-input">
-              <option value="'Lora', Georgia, serif">Lora (Serif)</option>
-              <option value="'Inter', sans-serif">Inter (Sans)</option>
-            </select>
-          </div>
 
           <h4 style="margin: 24px 0 8px; color: var(--accent);">Sito generale</h4>
           <div class="form-group"><label>Colore principale</label><input type="color" id="cfgAccent" class="form-input" style="height:40px; padding:4px;"></div>
@@ -607,7 +595,6 @@
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwX-A22zTG6w8b6nz1MapdlJfu4whO_MdWLzORSlMdPHYu7cKhlzjmjmEyq9JkVxoAh/exec";
     const ADMIN_EMAIL = "bibliotecacaltabellotta@gmail.com";
-    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSj23gySMvOUCVWA_1r8iZkpGsYx8SpCWWkA0Kuum-WY3eaiHuY9YJVtZAtQw9uic21rFir_dz2b1OS/pub?gid=1161094326&single=true&output=csv";
 
     let allBooks = JSON.parse(localStorage.getItem('biblio_books')) || [];
     let loansMap = JSON.parse(localStorage.getItem('biblio_loans_map')) || {};
@@ -646,9 +633,16 @@
             readers = data.readers;
             localStorage.setItem('biblio_readers', JSON.stringify(readers));
           }
+          if (Array.isArray(data.books) && data.books.length > 0) {
+            allBooks = data.books;
+            applyLoansToBooks();
+            allBooks.sort((a, b) => a.titolo.localeCompare(b.titolo));
+            localStorage.setItem('biblio_books', JSON.stringify(allBooks));
+          }
           if (data.loans && typeof data.loans === 'object') {
             loansMap = data.loans;
             localStorage.setItem('biblio_loans_map', JSON.stringify(loansMap));
+            applyLoansToBooks();
           }
           if (Array.isArray(data.evidenza)) {
             evidenzaList = data.evidenza;
@@ -779,60 +773,17 @@
       else { input.type = 'password'; btn.innerText = 'Mostra'; }
     }
 
-    function parseCSV(text) {
-      const rows = []; let row = []; let val = ''; let q = false;
-      for (let i = 0; i < text.length; i++) {
-        let c = text[i], n = text[i+1];
-        if (c === '"' && q && n === '"') { val += '"'; i++; }
-        else if (c === '"') { q = !q; }
-        else if (c === ',' && !q) { row.push(val.trim()); val = ''; }
-        else if ((c === '\n' || c === '\r') && !q) {
-          if (val || row.length) { row.push(val.trim()); rows.push(row); row = []; val = ''; }
-        } else { val += c; }
-      }
-      if (val || row.length) { row.push(val.trim()); rows.push(row); }
-      return rows;
-    }
-
     async function initApp() {
       initSiteConfig();
       renderNavbar();
       renderCatalog();
       renderHomeEvidenza();
 
-      loadFromCloud().then(() => {
-        if (GOOGLE_SHEET_CSV_URL) {
-          const noCacheUrl = GOOGLE_SHEET_CSV_URL + "&t=" + new Date().getTime();
-          fetch(noCacheUrl)
-            .then(res => res.text())
-            .then(txt => {
-              const rows = parseCSV(txt);
-              // Mappatura flessibile: gestisce correttamente eventuali campi mancanti (titolo, autore, casa, anno, pagine, cm)
-              const csvBooks = rows.slice(1).filter(r => r[0] || r[1] || r[2]).map((r, idx) => ({
-                catalogazione: r[2] || String(idx + 1).padStart(3, '0'),
-                titolo: r[0] || r[1] || '—',
-                autore: r[1] && r[0] ? r[1] : (r[2] || '—'),
-                casa: r[3] || '—',
-                anno: r[4] || '—',
-                pagine: r[6] || r[5] || '—', // Colonna G per le pagine (indice 6), con fallback sicuro
-                cm: r[5] || '—',
-                stato: 'Disponibile',
-                assegnato: '',
-                dataPrestito: '',
-                rientro: '',
-                notePrestito: ''
-              }));
-              if(csvBooks.length > 0) {
-                allBooks = csvBooks;
-                applyLoansToBooks();
-                allBooks.sort((a, b) => a.titolo.localeCompare(b.titolo));
-                localStorage.setItem('biblio_books', JSON.stringify(allBooks));
-                renderCatalog();
-                renderHomeEvidenza();
-              }
-            }).catch(e => {});
-        }
-      });
+      // Carica i dati in tempo reale da Apps Script (include i libri aggiornati al millisecondo)
+      await loadFromCloud();
+      initSiteConfig();
+      renderCatalog();
+      renderHomeEvidenza();
 
       if (currentUser) {
         const me = readers.find(r => r.email === currentUser.email);
@@ -1268,6 +1219,8 @@
       document.getElementById('cfgTitle').value = siteConfig.title;
       document.getElementById('cfgDesc').value = siteConfig.desc;
       document.getElementById('cfgHeroImg').value = siteConfig.heroImg;
+      document.getElementById('cfgTitleColor').value = siteConfig.titleColor || '#f5f2ed';
+      document.getElementById('cfgWordColor').value = siteConfig.wordColor || '#a83226';
       document.getElementById('cfgAccent').value = siteConfig.accent;
       document.getElementById('cfgAddress').value = siteConfig.address || '';
       document.getElementById('cfgPhone').value = siteConfig.phone || '';
@@ -1280,7 +1233,9 @@
       siteConfig.title = document.getElementById('cfgTitle').value;
       siteConfig.desc = document.getElementById('cfgDesc').value;
       siteConfig.heroImg = document.getElementById('cfgHeroImg').value;
-      siteConfig.accent = document.getElementById('cfgAccent').value; // ripristina o lascia invariato se corretto
+      siteConfig.titleColor = document.getElementById('cfgTitleColor').value;
+      siteConfig.wordColor = document.getElementById('cfgWordColor').value;
+      siteConfig.accent = document.getElementById('cfgAccent').value;
       siteConfig.address = document.getElementById('cfgAddress').value;
       siteConfig.phone = document.getElementById('cfgPhone').value;
       siteConfig.hours = document.getElementById('cfgHours').value;
