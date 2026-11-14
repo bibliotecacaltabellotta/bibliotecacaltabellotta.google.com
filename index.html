@@ -653,9 +653,24 @@
         const res = await fetch(APPS_SCRIPT_URL);
         if (!res.ok) return;
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          readers = data;
-          localStorage.setItem('biblio_readers', JSON.stringify(readers));
+        
+        if (data && typeof data === 'object') {
+          if (Array.isArray(data.readers) && data.readers.length > 0) {
+            readers = data.readers;
+            localStorage.setItem('biblio_readers', JSON.stringify(readers));
+          }
+          if (data.loans && typeof data.loans === 'object') {
+            loansMap = data.loans;
+            localStorage.setItem('biblio_loans_map', JSON.stringify(loansMap));
+          }
+          if (Array.isArray(data.evidenza)) {
+            evidenzaList = data.evidenza;
+            localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
+          }
+          if (data.config && typeof data.config === 'object') {
+            siteConfig = { ...siteConfig, ...data.config };
+            localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
+          }
         }
       } catch (e) {}
     }
@@ -1219,7 +1234,7 @@
       localStorage.setItem('biblio_loans_map', JSON.stringify(loansMap));
       localStorage.setItem('biblio_readers', JSON.stringify(readers));
       
-      await saveToCloud({ action: "saveLoans", loans: loansMap });
+      await saveToCloud({ action: "saveGlobalData", loans: loansMap, evidenza: evidenzaList, config: siteConfig });
       renderAdminPrestiti();
       renderCatalog();
       renderHomeEvidenza();
@@ -1246,7 +1261,7 @@
       if(!isAdmin()) return;
       evidenzaList = Array.from(document.querySelectorAll('.ev-chk:checked')).map(el => el.value);
       localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
-      await saveToCloud({ action: "saveEvidenza", evidenza: evidenzaList });
+      await saveToCloud({ action: "saveGlobalData", loans: loansMap, evidenza: evidenzaList, config: siteConfig });
       alert('Libri in evidenza salvati nel cloud!');
       renderHomeEvidenza();
     }
@@ -1276,7 +1291,7 @@
       siteConfig.wordColor = document.getElementById('cfgWordColor').value;
       siteConfig.titleFont = document.getElementById('cfgTitleFont').value;
       siteConfig.wordFont = document.getElementById('cfgWordFont').value;
-      siteConfig.accent = document.getElementById('cfgAccent').value;
+      siteConfig.accent = document.getElementById('cfgAccent5').value || document.getElementById('cfgAccent').value;
       siteConfig.address = document.getElementById('cfgAddress').value;
       siteConfig.phone = document.getElementById('cfgPhone').value;
       siteConfig.hours = document.getElementById('cfgHours').value;
@@ -1284,7 +1299,7 @@
 
       localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
       initSiteConfig();
-      await saveToCloud({ action: "saveConfig", config: siteConfig });
+      await saveToCloud({ action: "saveGlobalData", loans: loansMap, evidenza: evidenzaList, config: siteConfig });
       alert('Personalizzazioni salvate nel cloud!');
     }
 
