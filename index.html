@@ -262,6 +262,19 @@
     .badge-disponibile { background: rgba(46, 160, 67, 0.2); color: #3fb950; }
     .badge-prestato { background: rgba(248, 81, 73, 0.2); color: #f85149; }
 
+    .mail-queue-box {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
     footer {
       border-top: 1px solid var(--border-color);
       background-color: var(--bg-main);
@@ -485,6 +498,17 @@
       </div>
 
       <div id="adminPrestiti" class="admin-panel">
+        <div id="mailQueueBanner" class="mail-queue-box">
+          <div>
+            <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">Riepiloghi prestiti pronti per l'invio via mail:</strong>
+            <div id="mailQueueSummaryText" style="font-size: 0.85rem; color: var(--text-secondary);"></div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-primary" onclick="sendQueuedLoanEmails()">Invia mail riepilogo prestiti</button>
+            <button class="btn-secondary" onclick="clearMailQueue()">Svuota coda</button>
+          </div>
+        </div>
+
         <div style="margin-bottom: 20px;"><input type="text" id="adminPrestitiSearch" class="form-input" style="max-width: 320px;" placeholder="Cerca libro nei prestiti..." autocomplete="off" oninput="renderAdminPrestiti()"></div>
         <div class="table-container">
           <table>
@@ -575,6 +599,9 @@
       email: ADMIN_EMAIL
     };
 
+    // Coda per inviare 1 sola mail cumulativa per utente quando si assegnano più libri
+    let loanEmailQueue = JSON.parse(localStorage.getItem('biblio_loan_email_queue')) || [];
+
     function isAdmin() {
       if(!currentUser) return false;
       return currentUser.email === ADMIN_EMAIL || currentUser.cellulare === "3330000000" || currentUser.nickname.toLowerCase() === "bibliotecacaltabellotta";
@@ -663,7 +690,6 @@
       document.getElementById('homeMainDesc').innerText = siteConfig.desc || "";
       document.getElementById('heroImageTag').src = siteConfig.heroImg;
 
-      // Genera dinamicamente la favicon sincronizzata con il colore principale e il libriccino centrato
       const svgIcon = `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='${siteConfig.accent}'><rect width='24' height='24' rx='6'/><path d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20' stroke='white' stroke-width='2' fill='none'/></svg>`;
       document.getElementById('dynamicFavicon').href = `data:image/svg+xml;utf8,${encodeURIComponent(svgIcon)}`;
 
@@ -691,7 +717,7 @@
       if(viewName === 'preferiti') renderFavorites();
       if(viewName === 'profilo') renderProfile();
       if(viewName === 'lettori') renderReaders();
-      if(viewName === 'gestione') { renderAdminPrestiti(); loadConfigToAdmin(); }
+      if(viewName === 'gestione') { renderAdminPrestiti(); renderMailQueueBanner(); loadConfigToAdmin(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -941,7 +967,7 @@
 
       let active = allBooks.filter(b => b.assegnato === reader.email);
       document.getElementById('profActiveLoansCount').innerText = active.length;
-      document.getElementById('profActiveLoansList').innerHTML = active.length ? active.map(b => `• <strong>${b.titolo}</strong> (${b.autore})`).join('<br>') : 'Nessun prestito attivo.';
+      document.getElementById('profActiveLoansList').innerHTML = active.length ? active.map(b => `• <strong>${b.titolo}</strong> (${b.autore}) — Rientro: ${b.rientro || '—'}`).join('<br>') : 'Nessun prestito attivo.';
 
       let returned = reader.returnedBooks || [];
       document.getElementById('profBooksReturnedCount').innerText = returned.length;
@@ -1009,7 +1035,7 @@
 
       let act = allBooks.filter(b => b.assegnato === r.email);
       document.getElementById('schActCount').innerText = act.length;
-      document.getElementById('schActList').innerHTML = act.length ? act.map(b => `• ${b.titolo}`).join('<br>') : 'Nessuno.';
+      document.getElementById('schActList').innerHTML = act.length ? act.map(b => `• ${b.titolo} (Rientro: ${b.rientro || '—'})`).join('<br>') : 'Nessuno.';
 
       let userFavs = Array.isArray(r.favorites) ? r.favorites : [];
       document.getElementById('schFavList').innerHTML = userFavs.length ? userFavs.map(b => `• ${b.titolo}`).join('<br>') : 'Nessuno.';
@@ -1036,7 +1062,7 @@
         document.getElementById('admTab'+t).classList.remove('active-tab');
       });
       document.getElementById('admTab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active-tab');
-      if(tab === 'prestiti') renderAdminPrestiti();
+      if(tab === 'prestiti') { renderAdminPrestiti(); renderMailQueueBanner(); }
       if(tab === 'evidenza') renderAdminEvidenzaChecklist();
     }
 
@@ -1049,6 +1075,13 @@
       tbody.innerHTML = filtered.map((b) => {
         let idx = allBooks.findIndex(item => item.titolo === b.titolo);
         let isDisp = b.stato === 'Disponibile';
+        let actionButtons = isDisp 
+          ? `<button class="btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="setPrestito(${idx}, 'Non disponibile', true)">Assegna</button>` 
+          : `<div style="display:flex; gap:6px; flex-wrap:wrap;">
+               <button class="btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="setPrestito(${idx}, 'Non disponibile', false)">Salva data</button>
+               <button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="setPrestito(${idx}, 'Disponibile', false)">Rientro</button>
+             </div>`;
+
         return `
           <tr>
             <td><strong>${b.titolo}</strong></td>
@@ -1058,14 +1091,14 @@
             <td><input type="date" id="date_rientro_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.rientro||''}"></td>
             <td>
               <div style="margin-bottom:6px;"><input type="text" id="note_prestito_${idx}" class="form-input" style="padding:4px; font-size:0.80rem;" value="${b.notePrestito||''}" placeholder="Note..." autocomplete="off"></div>
-              ${isDisp ? `<button class="btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="setPrestito(${idx}, 'Non disponibile')">Assegna</button>` : `<button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="setPrestito(${idx}, 'Disponibile')">Rientro</button>`}
+              ${actionButtons}
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    async function setPrestito(idx, nuovoStato) {
+    async function setPrestito(idx, nuovoStato, isNewAssignment) {
       if(!isAdmin()) return;
       const target = document.getElementById(`assign_target_${idx}`).value.trim();
       const dataP = document.getElementById(`date_prestito_${idx}`).value;
@@ -1084,6 +1117,10 @@
             await saveToCloud({ action: "updateUser", email: r.email, returnedBooks: r.returnedBooks, favorites: r.favorites });
           }
         }
+        // Rimuove eventuale titolo dalla coda mail se era appena stato assegnato
+        loanEmailQueue = loanEmailQueue.filter(item => item.titolo !== libro.titolo);
+        localStorage.setItem('biblio_loan_email_queue', JSON.stringify(loanEmailQueue));
+
         libro.assegnato = '';
         libro.dataPrestito = '';
         libro.rientro = '';
@@ -1101,6 +1138,18 @@
           rientro: dataR,
           notePrestito: note
         };
+
+        // Se è una nuova assegnazione con email valida, aggiungila alla coda per l'invio cumulativo
+        if (isNewAssignment && target) {
+          loanEmailQueue = loanEmailQueue.filter(item => item.titolo !== libro.titolo);
+          loanEmailQueue.push({
+            email: target.toLowerCase(),
+            titolo: libro.titolo,
+            dataPrestito: dataP,
+            rientro: dataR
+          });
+          localStorage.setItem('biblio_loan_email_queue', JSON.stringify(loanEmailQueue));
+        }
       }
 
       libro.stato = nuovoStato;
@@ -1110,8 +1159,69 @@
       
       await saveToCloud({ action: "saveGlobalData", loans: loansMap, evidenza: evidenzaList, config: siteConfig });
       renderAdminPrestiti();
+      renderMailQueueBanner();
       renderCatalog();
       renderHomeEvidenza();
+    }
+
+    function renderMailQueueBanner() {
+      const banner = document.getElementById('mailQueueBanner');
+      const textEl = document.getElementById('mailQueueSummaryText');
+      if (!banner || !textEl) return;
+
+      if (loanEmailQueue.length === 0) {
+        banner.style.display = 'none';
+        return;
+      }
+
+      // Raggruppa per email
+      const grouped = {};
+      loanEmailQueue.forEach(item => {
+        if (!grouped[item.email]) grouped[item.email] = [];
+        grouped[item.email].push(item.titolo);
+      });
+
+      const lines = Object.keys(grouped).map(email => `<strong>${email}</strong>: ${grouped[email].length} libro/i (${grouped[email].join(', ')})`);
+      textEl.innerHTML = lines.join(' &nbsp;|&nbsp; ');
+      banner.style.display = 'flex';
+    }
+
+    async function sendQueuedLoanEmails() {
+      if (loanEmailQueue.length === 0) return;
+
+      // Raggruppa per utente + dataPrestito + rientro per inviare 1 sola mail per blocco
+      const batches = {};
+      loanEmailQueue.forEach(item => {
+        const key = `${item.email}__${item.dataPrestito}__${item.rientro}`;
+        if (!batches[key]) {
+          batches[key] = {
+            email: item.email,
+            dataPrestito: item.dataPrestito,
+            rientro: item.rientro,
+            titoli: []
+          };
+        }
+        batches[key].titoli.push(item.titolo);
+      });
+
+      for (let key in batches) {
+        const batch = batches[key];
+        await saveToCloud({
+          action: "sendLoanSummary",
+          email: batch.email,
+          titoli: batch.titoli,
+          dataPrestito: batch.dataPrestito,
+          rientro: batch.rientro
+        });
+      }
+
+      clearMailQueue();
+    }
+
+    function clearMailQueue() {
+      loanEmailQueue = [];
+      localStorage.removeItem('biblio_loan_email_queue');
+      renderMailQueueBanner();
     }
 
     async function sendInviteEmail() {
