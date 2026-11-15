@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Biblioteca di Caltabellotta</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23a83226'><rect width='24' height='24' rx='6'/><path d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20' stroke='white' stroke-width='2' fill='none'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
@@ -623,16 +624,13 @@
         try {
           result = JSON.parse(text);
         } catch (err) {
-          alert("Errore di comunicazione con il server.");
           return false;
         }
         if (result.status !== "success") {
-          alert(`Errore: ${result.message || "Operazione fallita"}`);
           return false;
         }
         return true;
       } catch (e) {
-        alert("Errore di connessione al server: " + e.message);
         return false;
       }
     }
@@ -812,7 +810,7 @@
     }
 
     async function toggleFavorite(titolo) {
-      if(!currentUser) { alert('Effettua l\'accesso per salvare i preferiti.'); switchView('accedi'); return; }
+      if(!currentUser) { switchView('accedi'); return; }
       const book = allBooks.find(b => b.titolo === titolo);
       if (!book) return;
       const idx = favorites.findIndex(f => f.titolo === titolo);
@@ -877,18 +875,17 @@
     async function handleLogin() {
       const identifier = document.getElementById('loginId').value.trim();
       const pass = document.getElementById('loginPass').value;
-      if(!identifier || !pass) { alert('Compila tutti i campi.'); return; }
+      if(!identifier || !pass) return;
 
       await loadFromCloud();
       const user = readers.find(r => (r.email === identifier || r.nickname === identifier || r.cellulare === identifier) && r.password === pass);
-      if(!user) { alert('Credenziali non valide.'); return; }
+      if(!user) return;
 
       currentUser = { email: user.email, nickname: user.nickname, cellulare: user.cellulare, password: user.password };
       favorites = Array.isArray(user.favorites) ? user.favorites : [];
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
       localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
 
-      alert('Accesso effettuato!');
       switchView('home');
     }
 
@@ -898,7 +895,7 @@
       const nickname = document.getElementById('regNickname').value.trim();
       const pass = document.getElementById('regPass').value;
 
-      if(!email || !phone || !nickname || !pass) { alert('Compila tutti i campi.'); return; }
+      if(!email || !phone || !nickname || !pass) return;
       
       const ok = await saveToCloud({ action: "register", nickname, email, cellulare: phone, password: pass });
       if (ok) {
@@ -907,7 +904,6 @@
         favorites = [];
         localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
         localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
-        alert('Registrazione completata e salvata nel cloud!');
         switchView('home');
       }
     }
@@ -921,7 +917,7 @@
     }
 
     async function deleteAccount() {
-      if(isAdmin()) { alert("L'admin non può eliminare l'account."); return; }
+      if(isAdmin()) return;
       if(confirm("Eliminare definitivamente l'account?")) {
         await saveToCloud({ action: "deleteUser", email: currentUser.email });
         readers = readers.filter(r => r.email !== currentUser.email);
@@ -953,7 +949,7 @@
       let nick = document.getElementById('profNickInput').value.trim();
       let pass = document.getElementById('profPassInput').value;
 
-      if(!nick || !pass) { alert('Compila i campi.'); return; }
+      if(!nick || !pass) return;
 
       let reader = readers.find(r => r.email === currentUser.email);
       if(reader) {
@@ -969,7 +965,6 @@
       localStorage.setItem('biblio_current_user', JSON.stringify(currentUser));
       
       await saveToCloud({ action: "updateUser", email: currentUser.email, cellulare: phone, nickname: nick, password: pass, favorites: reader.favorites, returnedBooks: reader.returnedBooks });
-      alert('Profilo aggiornato e salvato nel cloud!');
       renderProfile();
     }
 
@@ -1027,7 +1022,6 @@
         r.adminNotes = notes;
         localStorage.setItem('biblio_readers', JSON.stringify(readers));
         await saveToCloud({ action: "updateAdminNotes", email: viewingReaderEmail, adminNotes: notes });
-        alert('Note riservate salvate nel cloud!');
       }
     }
 
@@ -1114,18 +1108,13 @@
       renderAdminPrestiti();
       renderCatalog();
       renderHomeEvidenza();
-      alert('Prestito aggiornato e salvato nel cloud!');
     }
 
     async function sendInviteEmail() {
       const email = document.getElementById('inviteEmail').value.trim();
-      if(!email) { alert('Inserisci un indirizzo email.'); return; }
-      
-      const success = await saveToCloud({ action: "sendInvite", email: email });
-      if(success) {
-        alert(`Invito ufficiale inviato con successo a ${email}!`);
-        document.getElementById('inviteEmail').value = '';
-      }
+      if(!email) return;
+      await saveToCloud({ action: "sendInvite", email: email });
+      document.getElementById('inviteEmail').value = '';
     }
 
     function renderAdminEvidenzaChecklist() {
@@ -1143,7 +1132,6 @@
       evidenzaList = Array.from(document.querySelectorAll('.ev-chk:checked')).map(el => el.value);
       localStorage.setItem('biblio_evidenza', JSON.stringify(evidenzaList));
       await saveToCloud({ action: "saveGlobalData", loans: loansMap, evidenza: evidenzaList, config: siteConfig });
-      alert('Libri in evidenza salvati nel cloud!');
       renderHomeEvidenza();
     }
 
@@ -1177,7 +1165,6 @@
       localStorage.setItem('biblio_config', JSON.stringify(siteConfig));
       initSiteConfig();
       await saveToCloud({ action: "saveGlobalData", loans: loansMap, evidenza: evidenzaList, config: siteConfig });
-      alert('Personalizzazioni salvate nel cloud!');
     }
 
     window.addEventListener('DOMContentLoaded', () => {
