@@ -599,7 +599,6 @@
       email: ADMIN_EMAIL
     };
 
-    // Coda per inviare 1 sola mail cumulativa per utente quando si assegnano più libri
     let loanEmailQueue = JSON.parse(localStorage.getItem('biblio_loan_email_queue')) || [];
 
     function isAdmin() {
@@ -811,7 +810,7 @@
       }
 
       tbody.innerHTML = filtered.map(b => {
-        const isFav = favorites.some(f => f.titolo === b.titolo);
+        const isFav = favorites.some(f => f.titolo.trim() === b.titolo.trim());
         const badge = b.stato === 'Disponibile' ? `<span class="badge-status badge-disponibile">Disponibile</span>` : `<span class="badge-status badge-prestato">Non disponibile</span>`;
         let catTd = isAdmin() ? `<td>${b.catalogazione || '—'}</td>` : '';
         let cmTd = isAdmin() ? `<td>${b.cm || '—'}</td>` : '';
@@ -839,13 +838,14 @@
       await toggleFavorite(titolo);
     }
 
-   async function toggleFavorite(titolo) {
+    async function toggleFavorite(titolo) {
       if(!currentUser) { switchView('accedi'); return; }
-      const idx = favorites.findIndex(f => f.titolo === titolo);
+      const cleanTitle = titolo.trim();
+      const idx = favorites.findIndex(f => f.titolo.trim() === cleanTitle);
       if(idx > -1) {
         favorites.splice(idx, 1);
       } else {
-        const book = allBooks.find(b => b.titolo === titolo);
+        const book = allBooks.find(b => b.titolo.trim() === cleanTitle);
         if (!book) return;
         favorites.push({ titolo: book.titolo, autore: book.autore, casa: book.casa });
       }
@@ -887,7 +887,7 @@
       if(!evBooks.length) { container.innerHTML = `<p style="color:var(--text-secondary);">Nessun libro in evidenza per ora.</p>`; return; }
       
       container.innerHTML = evBooks.map(b => {
-        const isFav = favorites.some(f => f.titolo === b.titolo);
+        const isFav = favorites.some(f => f.titolo.trim() === b.titolo.trim());
         const statusBadge = b.stato === 'Disponibile' 
           ? `<span class="badge-status badge-disponibile" style="display:inline-block; margin-top:8px;">Disponibile</span>` 
           : `<span class="badge-status badge-prestato" style="display:inline-block; margin-top:8px;">Non disponibile</span>`;
@@ -1121,7 +1121,6 @@
             await saveToCloud({ action: "updateUser", email: r.email, returnedBooks: r.returnedBooks, favorites: r.favorites });
           }
         }
-        // Rimuove eventuale titolo dalla coda mail se era appena stato assegnato
         loanEmailQueue = loanEmailQueue.filter(item => item.titolo !== libro.titolo);
         localStorage.setItem('biblio_loan_email_queue', JSON.stringify(loanEmailQueue));
 
@@ -1143,8 +1142,7 @@
           notePrestito: note
         };
 
-        // Se è una nuova assegnazione con email valida, aggiungila alla coda per l'invio cumulativo
-        if (isNewAssignment && target) {
+        if (isNewAssignment && target && target.includes('@')) {
           loanEmailQueue = loanEmailQueue.filter(item => item.titolo !== libro.titolo);
           loanEmailQueue.push({
             email: target.toLowerCase(),
@@ -1178,7 +1176,6 @@
         return;
       }
 
-      // Raggruppa per email
       const grouped = {};
       loanEmailQueue.forEach(item => {
         if (!grouped[item.email]) grouped[item.email] = [];
@@ -1193,7 +1190,6 @@
     async function sendQueuedLoanEmails() {
       if (loanEmailQueue.length === 0) return;
 
-      // Raggruppa per utente + dataPrestito + rientro per inviare 1 sola mail per blocco
       const batches = {};
       loanEmailQueue.forEach(item => {
         const key = `${item.email}__${item.dataPrestito}__${item.rientro}`;
