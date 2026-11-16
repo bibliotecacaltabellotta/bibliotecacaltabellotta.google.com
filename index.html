@@ -839,12 +839,16 @@
       await toggleFavorite(titolo);
     }
 
-    async function toggleFavorite(titolo) {
+   async function toggleFavorite(titolo) {
       if(!currentUser) { switchView('accedi'); return; }
-      const book = allBooks.find(b => b.titolo === titolo);
-      if (!book) return;
       const idx = favorites.findIndex(f => f.titolo === titolo);
-      if(idx > -1) favorites.splice(idx, 1); else favorites.push({ titolo: book.titolo, autore: book.autore, casa: book.casa });
+      if(idx > -1) {
+        favorites.splice(idx, 1);
+      } else {
+        const book = allBooks.find(b => b.titolo === titolo);
+        if (!book) return;
+        favorites.push({ titolo: book.titolo, autore: book.autore, casa: book.casa });
+      }
       localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
 
       const me = readers.find(r => r.email === currentUser.email);
@@ -871,7 +875,7 @@
             <td style="font-weight:600;">${b.titolo}</td>
             <td>${b.autore}</td>
             <td>${b.casa}</td>
-            <td style="text-align:center;"><button class="btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="toggleFavoriteByEncoded('${safeTitle}'); renderFavorites();">Rimuovi</button></td>
+            <td style="text-align:center;"><button class="btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="toggleFavoriteByEncoded('${safeTitle}')">Rimuovi</button></td>
           </tr>
         `;
       }).join('');
