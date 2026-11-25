@@ -599,6 +599,7 @@
       email: ADMIN_EMAIL
     };
 
+    // Coda per inviare 1 sola mail cumulativa per utente quando si assegnano più libri
     let loanEmailQueue = JSON.parse(localStorage.getItem('biblio_loan_email_queue')) || [];
 
     function isAdmin() {
@@ -810,7 +811,7 @@
       }
 
       tbody.innerHTML = filtered.map(b => {
-        const isFav = favorites.some(f => f.titolo.trim() === b.titolo.trim());
+        const isFav = favorites.some(f => f.titolo === b.titolo);
         const badge = b.stato === 'Disponibile' ? `<span class="badge-status badge-disponibile">Disponibile</span>` : `<span class="badge-status badge-prestato">Non disponibile</span>`;
         let catTd = isAdmin() ? `<td>${b.catalogazione || '—'}</td>` : '';
         let cmTd = isAdmin() ? `<td>${b.cm || '—'}</td>` : '';
@@ -825,7 +826,7 @@
             <td>${b.pagine || '—'}</td>
             ${cmTd}
             <td>${badge}</td>
-            <td style="text-align:center;"><button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:${isFav?'var(--accent)':'var(--text-muted)'}" onclick="toggleFavoriteByEncoded('${safeTitle}')">${isFav?'♥':'♡'}</button></td>
+            <td style="text-align:center;"><button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:isFav?'var(--accent)':'var(--text-muted)'"onclick="toggleFavoriteByEncoded('{safeTitle}')">${isFav?'♥':'♡'}</button></td>
           </tr>
         `;
       }).join('');
@@ -840,15 +841,10 @@
 
     async function toggleFavorite(titolo) {
       if(!currentUser) { switchView('accedi'); return; }
-      const cleanTitle = titolo.trim();
-      const idx = favorites.findIndex(f => f.titolo.trim() === cleanTitle);
-      if(idx > -1) {
-        favorites.splice(idx, 1);
-      } else {
-        const book = allBooks.find(b => b.titolo.trim() === cleanTitle);
-        if (!book) return;
-        favorites.push({ titolo: book.titolo, autore: book.autore, casa: book.casa });
-      }
+      const book = allBooks.find(b => b.titolo === titolo);
+      if (!book) return;
+      const idx = favorites.findIndex(f => f.titolo === titolo);
+      if(idx > -1) favorites.splice(idx, 1); else favorites.push({ titolo: book.titolo, autore: book.autore, casa: book.casa });
       localStorage.setItem('biblio_favorites', JSON.stringify(favorites));
 
       const me = readers.find(r => r.email === currentUser.email);
@@ -875,7 +871,7 @@
             <td style="font-weight:600;">${b.titolo}</td>
             <td>${b.autore}</td>
             <td>${b.casa}</td>
-            <td style="text-align:center;"><button class="btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="toggleFavoriteByEncoded('${safeTitle}')">Rimuovi</button></td>
+            <td style="text-align:center;"><button class="btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="toggleFavoriteByEncoded('${safeTitle}'); renderFavorites();">Rimuovi</button></td>
           </tr>
         `;
       }).join('');
@@ -887,19 +883,19 @@
       if(!evBooks.length) { container.innerHTML = `<p style="color:var(--text-secondary);">Nessun libro in evidenza per ora.</p>`; return; }
       
       container.innerHTML = evBooks.map(b => {
-        const isFav = favorites.some(f => f.titolo.trim() === b.titolo.trim());
+        const isFav = favorites.some(f => f.titolo === b.titolo);
         const statusBadge = b.stato === 'Disponibile' 
           ? `<span class="badge-status badge-disponibile" style="display:inline-block; margin-top:8px;">Disponibile</span>` 
           : `<span class="badge-status badge-prestato" style="display:inline-block; margin-top:8px;">Non disponibile</span>`;
         
         const safeTitle = encodeURIComponent(b.titolo);
-        let favButton = currentUser ? `<button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:${isFav?'var(--accent)':'var(--text-muted)'}; float:right;" onclick="toggleFavoriteByEncoded('${safeTitle}')">${isFav?'♥':'♡'}</button>` : '';
+        let favButton = currentUser ? `<button style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:isFav?'var(--accent)':'var(--text-muted)';float:right;"onclick="toggleFavoriteByEncoded('{safeTitle}')">${isFav?'♥':'♡'}</button>` : '';
 
         return `
           <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:20px; position:relative;">
             ${favButton}
             <h4 style="margin-bottom:6px; font-size:1.05rem; padding-right:24px;">${b.titolo}</h4>
-            <p style="color:var(--text-secondary); font-size:0.88rem;">${b.autore} - ${b.casa} (${b.anno})</p>
+            <p style="color:var(--text-secondary); font-size:0.88rem;">${b.autore} - b.casa({b.anno})</p>
             <div>${statusBadge}</div>
           </div>
         `;
@@ -971,11 +967,11 @@
 
       let active = allBooks.filter(b => b.assegnato === reader.email);
       document.getElementById('profActiveLoansCount').innerText = active.length;
-      document.getElementById('profActiveLoansList').innerHTML = active.length ? active.map(b => `• <strong>${b.titolo}</strong> (${b.autore}) — Rientro: ${b.rientro || '—'}`).join('<br>') : 'Nessun prestito attivo.';
+      document.getElementById('profActiveLoansList').innerHTML = active.length ? active.map(b => `• <strong>b.titolo</strong>({b.autore}) — Rientro: ${b.rientro || '—'}`).join('<br>') : 'Nessun prestito attivo.';
 
       let returned = reader.returnedBooks || [];
       document.getElementById('profBooksReturnedCount').innerText = returned.length;
-      document.getElementById('profReturnedLoansList').innerHTML = returned.length ? returned.map(b => `• <strong>${b.titolo}</strong> (${b.autore})`).join('<br>') : 'Nessun libro restituito.';
+      document.getElementById('profReturnedLoansList').innerHTML = returned.length ? returned.map(b => `• <strong>b.titolo</strong>({b.autore})`).join('<br>') : 'Nessun libro restituito.';
     }
 
     async function updateProfileData() {
@@ -1014,7 +1010,7 @@
 
         return `
           <tr>
-            <td><span ${clickAction}>${r.nickname}${adminBadge}</span></td>
+            <td><span clickAction>{r.nickname}${adminBadge}</span></td>
             <td style="text-align:right;"><span style="background:var(--bg-main); padding:3px 12px; border-radius:12px; border:1px solid var(--border-color);">${returnedCount}</span></td>
           </tr>
         `;
@@ -1089,12 +1085,12 @@
         return `
           <tr>
             <td><strong>${b.titolo}</strong></td>
-            <td><span class="badge-status ${isDisp?'badge-disponibile':'badge-prestato'}">${b.stato}</span></td>
-            <td><input type="text" id="assign_target_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.assegnato||''}" placeholder="Email utente" autocomplete="off"></td>
-            <td><input type="date" id="date_prestito_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.dataPrestito||''}"></td>
-            <td><input type="date" id="date_rientro_${idx}" class="form-input" style="padding:6px; font-size:0.85rem;" value="${b.rientro||''}"></td>
+            <td><span class="badge-status isDisp?'badge-disponibile':'badge-prestato'">{b.stato}</span></td>
+            <td><input type="text" id="assign_target_idx"class="form-input"style="padding:6px;font-size:0.85rem;"value="{b.assegnato||''}" placeholder="Email utente" autocomplete="off"></td>
+            <td><input type="date" id="date_prestito_idx"class="form-input"style="padding:6px;font-size:0.85rem;"value="{b.dataPrestito||''}"></td>
+            <td><input type="date" id="date_rientro_idx"class="form-input"style="padding:6px;font-size:0.85rem;"value="{b.rientro||''}"></td>
             <td>
-              <div style="margin-bottom:6px;"><input type="text" id="note_prestito_${idx}" class="form-input" style="padding:4px; font-size:0.80rem;" value="${b.notePrestito||''}" placeholder="Note..." autocomplete="off"></div>
+              <div style="margin-bottom:6px;"><input type="text" id="note_prestito_idx"class="form-input"style="padding:4px;font-size:0.80rem;"value="{b.notePrestito||''}" placeholder="Note..." autocomplete="off"></div>
               ${actionButtons}
             </td>
           </tr>
@@ -1121,6 +1117,7 @@
             await saveToCloud({ action: "updateUser", email: r.email, returnedBooks: r.returnedBooks, favorites: r.favorites });
           }
         }
+        // Rimuove eventuale titolo dalla coda mail se era appena stato assegnato
         loanEmailQueue = loanEmailQueue.filter(item => item.titolo !== libro.titolo);
         localStorage.setItem('biblio_loan_email_queue', JSON.stringify(loanEmailQueue));
 
@@ -1142,7 +1139,8 @@
           notePrestito: note
         };
 
-        if (isNewAssignment && target && target.includes('@')) {
+        // Se è una nuova assegnazione con email valida, aggiungila alla coda per l'invio cumulativo
+        if (isNewAssignment && target) {
           loanEmailQueue = loanEmailQueue.filter(item => item.titolo !== libro.titolo);
           loanEmailQueue.push({
             email: target.toLowerCase(),
@@ -1176,13 +1174,14 @@
         return;
       }
 
+      // Raggruppa per email
       const grouped = {};
       loanEmailQueue.forEach(item => {
         if (!grouped[item.email]) grouped[item.email] = [];
         grouped[item.email].push(item.titolo);
       });
 
-      const lines = Object.keys(grouped).map(email => `<strong>${email}</strong>: ${grouped[email].length} libro/i (${grouped[email].join(', ')})`);
+      const lines = Object.keys(grouped).map(email => `<strong>${email}</strong>: grouped[email].lengthlibro/i({grouped[email].join(', ')})`);
       textEl.innerHTML = lines.join(' &nbsp;|&nbsp; ');
       banner.style.display = 'flex';
     }
@@ -1190,6 +1189,7 @@
     async function sendQueuedLoanEmails() {
       if (loanEmailQueue.length === 0) return;
 
+      // Raggruppa per utente + dataPrestito + rientro per inviare 1 sola mail per blocco
       const batches = {};
       loanEmailQueue.forEach(item => {
         const key = `${item.email}__${item.dataPrestito}__${item.rientro}`;
@@ -1236,7 +1236,7 @@
       const container = document.getElementById('adminEvidenzaChecklist');
       container.innerHTML = allBooks.map(b => `
         <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.9rem; cursor:pointer;">
-          <input type="checkbox" value="${b.titolo}" ${evidenzaList.includes(b.titolo)?'checked':''} class="ev-chk"> ${b.titolo} (${b.autore})
+          <input type="checkbox" value="${b.titolo}" ${evidenzaList.includes(b.titolo)?'checked':''} class="ev-chk"> b.titolo({b.autore})
         </label>
       `).join('');
     }
